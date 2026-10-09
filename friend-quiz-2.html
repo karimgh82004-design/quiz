@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="madrid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>بلكتني ولا ما بلكتني اخر همي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;800&display=swap">
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#0b1a3a;--a:#c9a227;--b:#0b1a3a;--soft:#efe6c4;--btn:linear-gradient(135deg,#0b1a3a,#24407a);--btnink:#fff}
+:root[data-theme="anime"]{--bg:#ffe9f3;--card:#fff;--ink:#3b1d5a;--a:#ff5fa2;--b:#7b5cff;--soft:#ffd3e8;--btn:linear-gradient(135deg,#ff5fa2,#7b5cff);--btnink:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;font-weight:500}
+#app{max-width:480px;margin:0 auto;padding:16px;text-align:center}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tg{border:2px solid var(--a);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 12px;font:inherit;cursor:pointer}
+.card{background:var(--card);border:3px solid var(--a);border-radius:24px;padding:20px;margin:12px 0;box-shadow:0 6px 0 var(--soft)}
+h1,h2{margin:6px 0;font-weight:800}
+.hero{font-size:64px;line-height:1.1}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:14px;margin-top:12px;background:var(--btn);color:var(--btnink);font:inherit;font-weight:800;font-size:18px;cursor:pointer}
+input.t{width:100%;border:3px solid var(--b);border-radius:14px;padding:10px;font:inherit;font-size:17px;text-align:center;background:#fff;color:#111;margin-top:6px}
+.dots{display:flex;gap:4px;justify-content:center;margin-bottom:8px}
+.dots i{flex:1;max-width:26px;height:8px;border-radius:6px;background:var(--soft)}
+.dots i.on{background:var(--b)}
+.list{display:grid;gap:10px;margin-top:14px}
+.opt{display:flex;align-items:center;gap:12px;border:3px solid var(--b);background:var(--card);color:var(--ink);border-radius:18px;padding:14px;font:inherit;font-weight:800;font-size:18px;cursor:pointer;text-align:right}
+.opt span{font-size:32px}
+.opt:active{background:var(--soft)}
+.bq{background:var(--bg);border-radius:16px;padding:10px;margin:10px 0;text-align:right}
+.orow{display:flex;gap:8px;align-items:center}
+.orow input[type=radio]{width:26px;height:26px;accent-color:var(--b);flex:none;margin-top:6px}
+.score{font-size:64px;font-weight:800;color:var(--b)}
+.row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:14px;padding:8px 12px;margin:6px 0;text-align:right}
+.row b{flex:1}.row em{font-style:normal;font-weight:800;color:var(--b)}
+.link{direction:ltr;word-break:break-all;background:var(--bg);border-radius:12px;padding:10px;font-size:13px}
+.small{font-size:13px;opacity:.8}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const P=(q,...o)=>({q,o:o.map(([t,e])=>({t,e}))});
+const PRE=[
+P("شو أكثر اشي بحبه؟",["الأكل","🍔"],["النوم","😴"],["الموبايل","📱"]),
+P("كيف بكتب؟",["طويل ومفصّل","📜"],["مختصر وخلص","👌"],["ريكورد صوتي","🎤"]),
+P("شو أكثر أكلة بحبها؟",["منسف","🍚"],["شاورما","🌯"],["بيتزا","🍕"]),
+P("مين أقرب شخص إلي؟",["أمي","👩"],["أبوي","👨"],["صاحبي","🤝"]),
+P("عالكم بنام أنا؟",["قبل 12","🌙"],["بين 12 و2","🦉"],["بعد 2 الفجر","🌅"]),
+P("شو أكثر اشي بحبه بالحياة؟",["العائلة","👨‍👩‍👧"],["الأصحاب","🫂"],["الفلوس","💸"]),
+P("شو هواياتي؟",["الكورة","⚽"],["الألعاب","🎮"],["السفر","✈️"]),
+P("شو أكثر اشي بكرهه؟",["الكذب","🤥"],["الزحمة","🚗"],["الصحيان بدري","⏰"]),
+P("أكثر فريق بحبه؟",["ريال مدريد","⚪"],["برشلونة","🔵"],["فريق ثاني","🌍"]),
+P("لما بزعل شو بعمل؟",["بسكت وبعزل حالي","🤐"],["بنام","😴"],["بحكي مع حدا","🗣️"])
+];
+let qid=null;const RAW=new URLSearchParams(location.search).get("q")||new URLSearchParams(location.hash.slice(1)).get("q")||"";
+const ART="https://claude.ai/artifact/55GwQqQaHc1bPegjm7jPYh";
+const app=document.getElementById("app");
+let db=null,unsub=null,S={s:"home",name:"",i:0,ans:[],quiz:null,msg:"",qs:[],cq:null};
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rid=()=>Math.random().toString(36).slice(2,9);
+const T=()=>document.documentElement.dataset.theme;
+const mascot=()=>T()==="madrid"?"⚽":"🫪";
+function hdr(){return `<div class="top"><b>بلكتني ولا ما بلكتني اخر همي</b><button class="tg" onclick="swap()">اللمعية خانم 🫡</button></div>`}
+function swap(){document.documentElement.dataset.theme=T()==="madrid"?"anime":"madrid";try{localStorage.setItem("th",T())}catch(e){}render()}
+try{const t=localStorage.getItem("th");if(t)document.documentElement.dataset.theme=t}catch(e){}
+
+function render(){
+ if(unsub){unsub();unsub=null}
+ let h=hdr();
+ const s=S.s;
+ if(s==="load")h+=`<div class="card"><div class="hero">${mascot()}</div><h2>جاري التحميل...</h2></div>`;
+ else if(s==="home"){
+  const f=!!qid;
+  h+=`<div class="card"><div class="hero">${mascot()}</div>
+  <h1>${f?"اذا ما بتعرف "+esc(S.quiz.owner)+" بتكون ملقت":"اذا ما بتعرفني بتكون ملقت"}</h1>
+  <p>${f?"جاوب على الأسئلة وشوف قديش بتعرفه":"اعمل اختبارك وشارك الرابط لتكشف الأصدقاء المزيفين"}</p>
+  <button class="btn" onclick="go('name')">بدء الاختبار</button>${(!f&&S.mine)?'<button class="btn" style="background:var(--soft);color:var(--ink)" onclick="restoreMy()">رجّعني لاختباري الأخير 🔗</button>':""}</div>${f?"":`<div class="card"><div class="small">عندك كود اختبار من صاحبك؟</div><input class="t" id="cd" placeholder="الصق الرابط أو الكود..." style="direction:ltr"><button class="btn" onclick="openCode()">افتح الاختبار</button>${S.msg?`<p class="small" style="color:#c00">${S.msg}</p>`:""}</div>`}`;
+ }else if(s==="name"){
+  h+=`<div class="card"><h2>شو اسمك؟</h2><input class="t" id="nm" maxlength="15" placeholder="اسمك..." value="${esc(S.name)}"><button class="btn" onclick="start()">متابعة</button></div>`;
+ }else if(s==="gate"){
+  h+=`<div class="card"><div class="hero">🤨</div><h2>كريم عمك؟</h2><div class="list"><button class="opt" onclick="go('gate2')">اه</button><button class="opt" onclick="go('gate2')">أكيد</button></div></div>`;
+ }else if(s==="gate2"){
+  h+=`<div class="card"><div class="hero">😎</div><h2>إذا إنت زلمة جاوب صح!</h2><button class="btn" onclick="afterGate()">يلا نبدأ</button></div>`;
+ }else if(s==="mode"){
+  h+=`<div class="card"><h2>كيف بدك تعمل اختبارك؟</h2><div class="list">
+  <button class="opt" onclick="pickMode('ready')"><span>📋</span>أسئلة جاهزة وأنا بختار الأجوبة</button>
+  <button class="opt" onclick="pickMode('own')"><span>✍️</span>بحط أسئلتي وأجوبتي أنا</button></div></div>`;
+ }else if(s==="build"){
+  h+=`<div class="card"><h2>✍️ اكتب أسئلتك</h2><p class="small">اكتب السؤال مع خيارين أو ثلاثة، وعلّم الجواب الصح بالدائرة</p>`+
+  S.cq.map((c,i)=>`<div class="bq"><b>سؤال ${i+1}</b><input class="t" placeholder="اكتب السؤال..." value="${esc(c.q)}" oninput="S.cq[${i}].q=this.value">`+
+  [0,1,2].map(j=>`<div class="orow"><input type="radio" name="c${i}" ${c.c===j?"checked":""} onchange="S.cq[${i}].c=${j}"><input class="t" placeholder="${j<2?"خيار "+(j+1):"خيار 3 (اختياري)"}" value="${esc(c.o[j])}" oninput="S.cq[${i}].o[${j}]=this.value"></div>`).join("")+`</div>`).join("")+
+  (S.cq.length<10?`<button class="btn" style="background:var(--soft);color:var(--ink)" onclick="addQ()">+ سؤال جديد</button>`:"")+
+  `<button class="btn" onclick="buildDone()">إنهاء ونشر</button>${S.msg?`<p class="small" style="color:#c00">${S.msg}</p>`:""}</div>`;
+ }else if(s==="q"){
+  const q=S.qs[S.i],f=!!qid;
+  h+=`<div class="dots">${S.qs.map((_,k)=>`<i class="${k<=S.i?"on":""}"></i>`).join("")}</div>
+  <div class="card"><div class="small">${f?"سؤال عن "+esc(S.quiz.owner):"جاوب عن نفسك"} · ${S.i+1} / ${S.qs.length}</div><h2>${esc(q.q)}</h2>
+  <div class="list">${q.o.map((o,k)=>`<button class="opt" onclick="pick(${k})">${o.e?`<span>${o.e}</span>`:""}${esc(o.t)}</button>`).join("")}</div></div>`;
+ }else if(s==="result"){
+  const n=S.qs.length,m=RES[Math.round(S.score/n*10)];
+  h+=`<div class="card"><div class="small">درجتك</div><div class="score">${S.score} / ${n}</div><h2>${m}</h2></div><div class="card"><p class="small">خبّر صاحبك بنتيجتك: انسخها وابعتها له</p><button class="btn" onclick="sendRes(this)">نسخ نتيجتي 📩</button></div>
+  <div class="card"><h2>بدك رابطك الخاص؟</h2><p class="small">اعمل اختبارك وشوف مين فعلاً بيعرفك</p><button class="btn" onclick="startOwn()">اعمل رابطي الخاص 🔗</button></div>`;
+ }else if(s==="share"){
+  const l=`${ART}#q=${S.code}`;
+  h+=`<div class="card"><div class="hero">🔗</div><h2>شارك الرابط ليعم الحقد والتفكك الأسري</h2><div class="link" id="lk">${l}</div><p class="small">لو الرابط ما فتح الأسئلة، خلي صاحبك يلصقه بخانة "عندك كود" بالصفحة الرئيسية</p>
+  <button class="btn" onclick="copyL('${l}',this)">نسخ الرابط</button>
+  <button class="btn" style="background:#111" onclick="copyL('${l}',this,1)">مشاركة عبر تيك توك 🎵</button><p class="small">بينسخ الرابط وبيفتح تيك توك، الصقه بالرسائل أو البايو</p>${S.msg?`<p class="small" style="color:#c00">${S.msg}</p>`:""}</div>${boardCard()}`;
+ }
+ app.innerHTML=h;
+ if(s==="name")document.getElementById("nm").focus();
+ 
+}
+function boardCard(){return `<div class="card"><h2>🏆 فضائح الهاملين</h2><div id="board">${S.board.length?S.board.slice().sort((a,b)=>b.s-a.s).map((x,k)=>`<div class="row"><span>${["🥇","🥈","🥉"][k]||k+1}</span><b>${esc(x.n)}</b><em>${x.s}/${x.t}</em></div>`).join(""):'<span class="small">لا أحد بعد...</span>'}</div><p class="small">لما صاحبك يبعتلك نتيجته، الصقها هون</p><input class="t" id="rs" placeholder="الصق نتيجة صاحبك..."><button class="btn" onclick="addRes()">ضيف للفضائح</button></div>`}
+function listen(){
+ const id=qid||S.id;if(!db||!id)return;
+ try{unsub=db.collection(`quizzes/${id}/scores`).onSnapshot(sn=>{
+  const el=document.getElementById("board");if(!el)return;
+  const r=sn.docs.map(d=>d.data()).sort((a,b)=>b.score-a.score||a.t-b.t);
+  el.innerHTML=r.length?r.map((x,k)=>`<div class="row"><span>${["🥇","🥈","🥉"][k]||k+1}</span><b>${esc(x.name)}</b><em>${x.score}/${x.n||10}</em></div>`).join(""):"لا أحد بعد...";
+ })}catch(e){}
+}
+function go(s){S.s=s;render()}
+function start(){
+ const v=document.getElementById("nm").value.trim();
+ if(!v){document.getElementById("nm").focus();return}
+ S.name=v;go("gate");
+}
+function afterGate(){
+ S.i=0;S.ans=[];
+ if(qid){S.qs=S.quiz.qs;go("q")}else go("mode");
+}
+function pickMode(m){
+ S.msg="";S.i=0;S.ans=[];S.custom=m==="own";
+ if(m==="ready"){S.qs=PRE;go("q")}
+ else{S.cq=[0,1,2].map(()=>({q:"",o:["","",""],c:0}));go("build")}
+}
+function addQ(){S.cq.push({q:"",o:["","",""],c:0});render()}
+function buildDone(){
+ S.msg="";const out=[];
+ for(const c of S.cq){
+  const q=c.q.trim();
+  if(!q&&c.o.every(x=>!x.trim()))continue;
+  const op=c.o.map((t,j)=>({t:t.trim(),j})).filter(x=>x.t);
+  if(!q||op.length<2||!c.o[c.c].trim()){S.msg="كمّل كل سؤال: نص السؤال + خيارين على الأقل + الجواب الصح";render();return}
+  out.push({q,o:op.map(x=>({t:x.t,e:""})),a:op.findIndex(x=>x.j===c.c)});
+ }
+ if(out.length<3){S.msg="أقل شي 3 أسئلة";render();return}
+ S.qs=out;S.ans=out.map(x=>x.a);save();
+}
+function save(){S.code=encQ();S.board=[];try{localStorage.setItem("fq_my",JSON.stringify({code:S.code,name:S.name,board:[]}))}catch(e){}go("share")}
+async function pick(c){
+ S.ans[S.i]=c;
+ if(S.i<S.qs.length-1){S.i++;render();return}
+ if(qid){
+  S.score=S.ans.reduce((a,x,k)=>a+(x===S.quiz.answers[k]?1:0),0);
+  
+  go("result");
+ }else save();
+}
+const RES=["بلوك نهائي لا رجعة فيه 🥰","يا هامل يا شرنة 💔","يا عدو الانسانية💔","ياااااااا بوووت🤡","بتعرف حسام؟ ما عمل عملتك😞","بتعرف خالد؟ ما عمل زيك🫩","بتعرف تسنيم؟ احسن بدكاش هالمعرفة","يلا ماشي حالك","بس لو تشد حالك شوي بتصير صاحبي","الكمال لله طبعا","الشااطرر العسللل الامورر البربووررر الفنان ع قولة ربا بحبككك ياخيييييي"];
+const b64=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb64=s=>decodeURIComponent(escape(atob(s.replace(/-/g,"+").replace(/_/g,"/"))));
+function encQ(){return b64(JSON.stringify({n:S.name,a:S.ans,q:S.custom?S.qs.map(x=>({q:x.q,o:x.o.map(y=>y.t)})):0}))}
+function decQ(c){try{c=c.trim();const m=c.match(/[?#&]q=([^&\s]+)/);if(m)c=m[1];const d=JSON.parse(unb64(c));if(!d.n||!Array.isArray(d.a))return false;const qs=d.q?d.q.map(x=>({q:x.q,o:x.o.map(t=>({t,e:""}))})):PRE;if(d.a.length!==qs.length)return false;S.quiz={owner:d.n,qs,answers:d.a};qid=c;return true}catch(e){return false}}
+function restoreMy(){const m=S.mine;S.name=m.name;S.code=m.code;S.board=m.board||[];go("share")}
+function resText(){return `جاوبت على اختبارك وجبت ${S.score}/${S.qs.length} 😏\nنتيجتي: ${S.name}*${S.score}*${S.qs.length}`}
+function sendRes(b){copyL(resText(),b)}
+function addRes(){const el=document.getElementById("rs"),m=el.value.match(/([^\n]+?)\*(\d+)\*(\d+)\s*$/);if(!m)return;S.board.push({n:m[1].trim().replace(/^.*نتيجتي:\s*/,""),s:+m[2],t:+m[3]});try{localStorage.setItem("fq_my",JSON.stringify({code:S.code,name:S.name,board:S.board}))}catch(e){}render()}
+function openCode(){const v=document.getElementById("cd").value;if(v.trim()&&decQ(v)){S.msg="";go("home")}else{S.msg="الرابط أو الكود ناقص، انسخه كامل من صاحبك";render()}}
+function startOwn(){qid=null;S.quiz=null;S.ans=[];S.i=0;S.msg="";go("gate")}
+function copyL(l,b,tt){
+ const done=()=>{if(b)b.textContent="تم النسخ ✓";if(tt)window.open("https://www.tiktok.com/","_blank")};
+ try{navigator.clipboard.writeText(l).then(done,done)}catch(e){const r=document.createRange();r.selectNode(document.getElementById("lk"));getSelection().addRange(r);done()}
+}
+(async()=>{
+ if(RAW&&!decQ(RAW))S.msg="الرابط ناقص، الصقه كامل بخانة الكود";try{const m=JSON.parse(localStorage.getItem("fq_my")||"null");if(m&&m.code)S.mine=m}catch(e){}
+
+ if(qid){
+  let ok=false;
+  ok=true;
+  if(!ok){app.innerHTML=hdr()+`<div class="card"><div class="hero">🚫</div><h2>تعذّر فتح الاختبار</h2><p class="small">تأكد من الرابط وإنك مسجّل دخول</p></div>`;return}
+ }
+ S.s="home";render();
+})();
+</script>
+</body>
+</html>
