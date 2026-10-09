@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="madrid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>بلكتني ولا ما بلكتني اخر همي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;800&display=swap">
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#0b1a3a;--a:#c9a227;--b:#0b1a3a;--soft:#efe6c4;--btn:linear-gradient(135deg,#0b1a3a,#24407a)}
+:root[data-theme="anime"]{--bg:#ffe9f3;--ink:#3b1d5a;--a:#ff5fa2;--b:#7b5cff;--soft:#ffd3e8;--btn:linear-gradient(135deg,#ff5fa2,#7b5cff)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;font-weight:500}
+#app{max-width:480px;margin:0 auto;padding:16px;text-align:center}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tg{border:2px solid var(--a);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 12px;font:inherit;cursor:pointer}
+.card{background:var(--card);border:3px solid var(--a);border-radius:24px;padding:20px;margin:12px 0;box-shadow:0 6px 0 var(--soft)}
+h1,h2{margin:6px 0;font-weight:800}.hero{font-size:60px;line-height:1.1}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:14px;margin-top:12px;background:var(--btn);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer}
+.btn.soft{background:var(--soft);color:var(--ink)}.btn.tt{background:#111}
+input.t,textarea.t,select.t{width:100%;border:3px solid var(--b);border-radius:14px;padding:10px;font:inherit;font-size:17px;text-align:center;background:#fff;color:#111;margin-top:6px}
+textarea.t{min-height:130px;text-align:right;resize:vertical}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin:12px 0}
+.tile{display:flex;align-items:center;gap:14px;background:var(--card);border:3px solid var(--a);border-radius:20px;padding:16px;font:inherit;font-weight:800;font-size:20px;color:var(--ink);cursor:pointer;box-shadow:0 5px 0 var(--soft)}
+.tile span{font-size:38px}
+.dots{display:flex;gap:4px;justify-content:center;margin-bottom:8px}
+.dots i{flex:1;max-width:26px;height:8px;border-radius:6px;background:var(--soft)}.dots i.on{background:var(--b)}
+.list{display:grid;gap:10px;margin-top:14px}
+.opt{display:flex;align-items:center;gap:12px;border:3px solid var(--b);background:var(--card);color:var(--ink);border-radius:18px;padding:14px;font:inherit;font-weight:800;font-size:18px;cursor:pointer;text-align:right;transition:background .2s,transform .2s}
+.opt span{font-size:32px}
+.opt.sel{background:var(--soft);border-color:var(--a);transform:scale(.97)}
+.opt.ok{background:#22c55e;border-color:#15803d;color:#fff}.opt.bad{background:#ef4444;border-color:#b91c1c;color:#fff}.opt.dim{opacity:.45}
+.bq{background:var(--bg);border-radius:16px;padding:10px;margin:10px 0;text-align:right}
+.orow{display:flex;gap:8px;align-items:center}
+.ck{flex:none;width:34px;height:34px;margin-top:6px;border-radius:50%;border:3px solid var(--b);background:#fff;cursor:pointer;font-size:16px}.ck.on{background:#22c55e;color:#fff}
+.score{font-size:60px;font-weight:800;color:var(--b)}
+.row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:14px;padding:8px 12px;margin:6px 0;text-align:right}
+.row b{flex:1}.row em{font-style:normal;font-weight:800;color:var(--b)}
+.link{direction:ltr;word-break:break-all;background:var(--bg);border-radius:12px;padding:10px;font-size:13px}
+.small{font-size:13px;opacity:.8}.err{color:#c00}
+.cd{background:var(--b);color:#fff;border-radius:14px;padding:8px;font-weight:800;margin-bottom:8px;direction:ltr}
+.bar{height:12px;border-radius:8px;background:var(--soft);overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:var(--btn)}
+.pr{text-align:right;margin:10px 0}.pr div{display:flex;justify-content:space-between}
+.msg{background:var(--bg);border-radius:14px;padding:12px;margin:8px 0;text-align:right;white-space:pre-wrap;word-break:break-word}
+.msg small{display:flex;justify-content:space-between;opacity:.7;margin-top:6px}.msg a{color:#c00;cursor:pointer}
+.foot{margin:18px 0 6px;display:flex;gap:10px;justify-content:center}
+.foot a{flex:1;text-decoration:none;color:#fff;border-radius:14px;padding:10px;font-weight:800;background:var(--btn)}
+.foot a.tk{background:#111}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAuth,onAuthStateChanged,signInAnonymously,signInWithPopup,GoogleAuthProvider,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getDatabase,ref,get,set,push,remove,runTransaction,onValue}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const CFG = {
+  apiKey: "AIzaSyC1QOVRrz4uipEGzF4txow_2PAQJkupq7g",
+  authDomain: "quiz-friends-2f263.firebaseapp.com",
+  databaseURL: "https://quiz-friends-2f263-default-rtdb.firebaseio.com",
+  projectId: "quiz-friends-2f263",
+  appId: "1:724750258267:web:4795615e7d41a61ac42f7e"
+};
+const IG="https://www.instagram.com/kariim.gh",TK="https://www.tiktok.com/@karim2004l";
+const P=(q,...o)=>({q,o:o.map(([t,e])=>({t,e}))});
+const PRE=[P("شو أكثر اشي بحبه؟",["الأكل","🍔"],["النوم","😴"],["الموبايل","📱"]),P("كيف بكتب؟",["طويل ومفصّل","📜"],["مختصر وخلص","👌"],["ريكورد صوتي","🎤"]),P("شو أكثر أكلة بحبها؟",["منسف","🍚"],["شاورما","🌯"],["بيتزا","🍕"]),P("مين أقرب شخص إلي؟",["أمي","👩"],["أبوي","👨"],["صاحبي","🤝"]),P("عالكم بنام أنا؟",["قبل 12","🌙"],["بين 12 و2","🦉"],["بعد 2 الفجر","🌅"]),P("شو أكثر اشي بحبه بالحياة؟",["العائلة","👨‍👩‍👧"],["الأصحاب","🫂"],["الفلوس","💸"]),P("شو هواياتي؟",["الكورة","⚽"],["الألعاب","🎮"],["السفر","✈️"]),P("شو أكثر اشي بكرهه؟",["الكذب","🤥"],["الزحمة","🚗"],["الصحيان بدري","⏰"]),P("أكثر فريق بحبه؟",["ريال مدريد","⚪"],["برشلونة","🔵"],["فريق ثاني","🌍"]),P("لما بزعل شو بعمل؟",["بسكت وبعزل حالي","🤐"],["بنام","😴"],["بحكي مع حدا","🗣️"])];
+const RES=["بلوك نهائي لا رجعة فيه 🥰","يا هامل يا شرنة 💔","يا عدو الانسانية💔","ياااااااا بوووت🤡","بتعرف حسام؟ ما عمل عملتك😞","بتعرف خالد؟ ما عمل زيك🫩","بتعرف تسنيم؟ احسن بدكاش هالمعرفة","يلا ماشي حالك","بس لو تشد حالك شوي بتصير صاحبي","الكمال لله طبعا","الشااطرر العسللل الامورر البربووررر الفنان ع قولة ربا بحبككك ياخيييييي"];
+const $=s=>document.querySelector(s),app=$("#app");
+const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rid=()=>Math.random().toString(36).slice(2,9);
+const sp=new URLSearchParams(location.search),Q=sp.get("q"),PL=sp.get("p"),M=sp.get("m");
+const BASE=location.href.split(/[?#]/)[0];
+let S={s:"home",msg:"",qs:[],ans:[],i:0,board:[],cnt:{},items:{},msgs:[],pa:[],dur:86400000,mt:"",name:""},au,db,lock=0;
+const own=()=>S.u&&!S.u.isAnonymous;
+const dn=()=>S.u.displayName||(S.u.email||"").split("@")[0]||"صاحبك";
+const T=()=>document.documentElement.dataset.theme,mc=()=>T()==="madrid"?"⚽":"🫪";
+try{const t=localStorage.getItem("th");if(t)document.documentElement.dataset.theme=t}catch(e){}
+const card=x=>`<div class="card">${x}</div>`,btn=(a,t,v,c)=>`<button class="btn ${c||""}" data-a="${a}"${v!=null?` data-v="${v}"`:""}>${t}</button>`;
+const tile=(a,i,t)=>`<button class="tile" data-a="need" data-v="${a}"><span>${i}</span>${t}</button>`;
+const err=()=>S.msg?`<p class="small err">${S.msg}</p>`:"";
+const fmt=ms=>{if(ms<=0)return"انتهى";const s=Math.floor(ms/1e3),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return(d?d+"d ":"")+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+const cd=()=>S.end?`<div class="cd" id="cd">⏳ ${fmt(S.end-Date.now())}</div>`:"";
+const hdr=()=>`<div class="top"><b>بلكتني ولا ما بلكتني اخر همي</b><button class="tg" data-a="th">اللمعية خانم 🫡</button></div>${own()?`<div class="small">أهلاً ${esc(dn())} · <a data-a="out" style="text-decoration:underline;cursor:pointer">خروج</a></div>`:""}`;
+const foot=()=>`<div class="foot"><a href="${IG}" target="_blank" rel="noopener">📸 Instagram</a><a class="tk" href="${TK}" target="_blank" rel="noopener">🎵 TikTok</a></div>`;
+const rows=()=>S.board.length?S.board.slice().sort((a,b)=>b.s/b.t-a.s/a.t||a.ts-b.ts).map((x,k)=>`<div class="row"><span>${["🥇","🥈","🥉"][k]||k+1}</span><b>${esc(x.n)}</b><em>${x.s}/${x.t}</em></div>`).join(""):'<span class="small">لا أحد بعد...</span>';
+const board=()=>card(`<h2>🏆 فضائح الهاملين</h2><div id="board">${rows()}</div>`);
+const res=()=>(S.pl?S.pl.q:[]).map((q,i)=>{const c=S.cnt[i]||{},v=q.o.map((_,j)=>c[j]||0),t=v.reduce((a,b)=>a+b,0);return`<div class="pr"><b>${esc(q.q)}</b>${q.o.map((o,j)=>{const p=t?Math.round(v[j]/t*100):0;return`<div><span>${esc(o)}</span><b>${p}%</b></div><div class="bar"><i style="width:${p}%"></i></div>`}).join("")}<span class="small">${t} صوت</span></div>`}).join("");
+const cp=l=>`<div class="link" id="lk">${l}</div>${btn("copy","نسخ الرابط",l)}${btn("tt","مشاركة عبر تيك توك 🎵",l,"tt")}<p class="small">بينسخ الرابط وبيفتح تيك توك، الصقه بالرسائل أو البايو</p>`;
+const optH=(q,a)=>`<div class="list">${q.o.map((o,k)=>`<button class="opt" data-a="${a}" data-v="${k}">${o.e?`<span>${o.e}</span>`:""}${esc(o.t)}</button>`).join("")}</div>`;
+const inp=(k,ph,v)=>`<input class="t" data-k="${k}" placeholder="${ph}" value="${esc(v)}">`;
+
+const V={
+home(){
+ if(Q)return card(`<div class="hero">${mc()}</div><h1>اذا ما بتعرف ${esc(S.owner)} بتكون ملقت</h1><p>جاوب على الأسئلة وشوف قديش بتعرفه</p>${btn("start","بدء الاختبار")}`);
+ return(own()?"":card(`<h2>سجّل دخول بحسابك</h2><p class="small">عشان تنشئ اختبارات وتصويتات وتستلم رسائل</p>${btn("google","الدخول بحساب Google")}${err()}`))+`<div class="cards">${tile("quiz","📝","إنشاء اختبار")}${tile("poll","🗳️","عمل تصويت")}${tile("msg","💌","رسالة من مجهول")}</div>`+(own()?btn("dash","لوحتي 📊","","soft"):"");
+},
+bad:()=>card(`<div class="hero">🚫</div><h2>الرابط مش شغال</h2><p class="small">تأكد إنك نسخته كامل</p>${btn("home","الصفحة الرئيسية")}`),
+name:()=>card(`<h2>شو اسمك؟</h2><input class="t" id="nm" maxlength="15" placeholder="اسمك..." value="${esc(S.name)}">${btn("setname","متابعة")}`),
+gate:()=>card(`<div class="hero">🤨</div><h2>كريم عمك؟</h2><div class="list"><button class="opt" data-a="gate2">اه</button><button class="opt" data-a="gate2">أكيد</button></div>`),
+gate2:()=>card(`<div class="hero">😎</div><h2>إذا إنت زلمة جاوب صح!</h2>${btn("afterGate","يلا نبدأ")}`),
+mode:()=>card(`<h2>كيف بدك تعمل اختبارك؟</h2><div class="list"><button class="opt" data-a="mode" data-v="r"><span>📋</span>أسئلة جاهزة وأنا بختار الأجوبة</button><button class="opt" data-a="mode" data-v="o"><span>✍️</span>بحط أسئلتي وأجوبتي أنا</button></div>`),
+qbuild:()=>card(`<h2>✍️ اكتب أسئلتك</h2><p class="small">اكتب السؤال مع خيارين أو ثلاثة، وعلّم الجواب الصح بالدايرة</p>`+S.cq.map((c,i)=>`<div class="bq"><b>سؤال ${i+1}</b>${inp(`cq.${i}.q`,"اكتب السؤال...",c.q)}`+[0,1,2].map(j=>`<div class="orow"><button class="ck ${c.c===j?"on":""}" data-a="cor" data-v="${i}.${j}">✔</button>${inp(`cq.${i}.o.${j}`,j<2?"خيار "+(j+1):"خيار 3 (اختياري)",c.o[j])}</div>`).join("")+`</div>`).join("")+(S.cq.length<10?btn("addq","+ سؤال جديد","","soft"):"")+btn("saveq","إنهاء ونشر")+err()),
+q(){const q=S.qs[S.i],f=!!S.fq;return`<div class="dots">${S.qs.map((_,k)=>`<i class="${k<=S.i?"on":""}"></i>`).join("")}</div>`+card(`<div class="small">${f?"سؤال عن "+esc(S.owner):"جاوب عن نفسك"} · ${S.i+1} / ${S.qs.length}</div><h2>${esc(q.q)}</h2>${optH(q,"pick")}`)},
+result(){const n=S.qs.length;return card(`<div class="small">درجتك</div><div class="score">${S.score} / ${n}</div><h2>${RES[Math.round(S.score/n*10)]}</h2>`)+board()+card(`<h2>بدك رابطك الخاص؟</h2>${btn("home","ابدأ من الرئيسية 🔗")}`)},
+share:()=>card(`<div class="hero">🔗</div><h2>شارك الرابط ليعم الحقد والتفكك الأسري</h2>${cp(BASE+"?q="+S.id)}`)+board(),
+pbuild:()=>card(`<h2>🗳️ عمل تصويت</h2><p class="small">من 1 لـ10 أسئلة، ولكل سؤال من 2 لـ4 خيارات</p>`+S.pq.map((c,i)=>`<div class="bq"><b>سؤال ${i+1}</b>${inp(`pq.${i}.q`,"اكتب السؤال...",c.q)}`+[0,1,2,3].map(j=>inp(`pq.${i}.o.${j}`,j<2?"خيار "+(j+1):"خيار "+(j+1)+" (اختياري)",c.o[j])).join("")+`</div>`).join("")+(S.pq.length<10?btn("addp","+ سؤال جديد","","soft"):"")+`<p class="small">مدة التصويت</p><select class="t" data-k="dur">${[[36e5,"ساعة"],[216e5,"6 ساعات"],[864e5,"يوم"],[2592e5,"3 أيام"],[6048e5,"أسبوع"]].map(([v,t])=>`<option value="${v}" ${+S.dur===v?"selected":""}>${t}</option>`).join("")}</select>`+btn("savep","نشر التصويت")+err()),
+pres:()=>cd()+card(`<h2>📊 نتائج تصويتك</h2>${res()||"..."}`)+card(`<h2>رابط التصويت</h2>${cp(BASE+"?p="+S.pid)}`),
+pvote(){const q=S.pl.q[S.i];return cd()+`<div class="dots">${S.pl.q.map((_,k)=>`<i class="${k<=S.i?"on":""}"></i>`).join("")}</div>`+card(`<div class="small">تصويت من ${esc(S.pl.n)} · ${S.i+1} / ${S.pl.q.length}</div><h2>${esc(q.q)}</h2>${optH({o:q.o.map(t=>({t,e:""}))},"vote")}`)},
+pdone:()=>cd()+card(`<div class="hero">🗳️</div><h2>${S.msg||"وصل صوتك، شكراً!"}</h2>`)+card(`<h2>بدك تعمل تصويتك؟</h2>${btn("home","ابدأ من الرئيسية")}`),
+msend:()=>card(`<div class="hero">💌</div><h2>ابعت رسالة لـ${esc(S.mn)}</h2><p class="small">ما حدا رح يعرف إنك إنت</p><textarea class="t" data-k="mt" maxlength="500" placeholder="اكتب رسالتك...">${esc(S.mt)}</textarea>${btn("send","ارسل بصفة مجهول 🕵️")}${err()}`),
+msent:()=>card(`<div class="hero">✅</div><h2>انرسلت الرسالة</h2>${btn("again","ابعت رسالة ثانية","","soft")}`)+card(`<h2>بدك رسائل مجهولة إلك؟</h2>${btn("home","ابدأ من الرئيسية")}`),
+inbox:()=>card(`<h2>🔗 رابط رسائلك</h2>${cp(BASE+"?m="+S.u.uid)}`)+card(`<h2>📥 الرسائل المرسلة إلك</h2>${S.msgs.length?S.msgs.map(([k,m])=>`<div class="msg">${esc(m.t)}<small><span>${new Date(m.ts).toLocaleString("ar")}</span><a data-a="del" data-v="${k}">حذف</a></small></div>`).join(""):'<span class="small">ما وصلتك رسائل بعد...</span>'}`),
+dash:()=>card(`<h2>📊 لوحتي</h2>${btn("inbox","📥 صندوق الرسائل","","soft")}${Object.entries(S.items).sort((a,b)=>b[1].ts-a[1].ts).map(([id,x])=>`<button class="opt" style="width:100%;margin-top:8px" data-a="open" data-v="${x.k}:${id}"><span>${x.k==="q"?"📝":"🗳️"}</span>${x.k==="q"?"اختبار":"تصويت"} ${esc(x.t)}</button>`).join("")||'<p class="small">ما عملت شي بعد</p>'}`)
+};
+function render(){app.innerHTML=hdr()+(CFG.apiKey?V[S.s]():card("<h2>ناقص apiKey</h2><p class='small'>حط apiKey و appId من إعدادات Firebase بالملف</p>"))+foot()}
+function go(s){S.s=s;if(S.unsub&&!["share","result","pres","inbox"].includes(s)){S.unsub();S.unsub=null}render();scrollTo(0,0)}
+function watch(p,fn){if(S.unsub)S.unsub();S.unsub=onValue(ref(db,p),sn=>fn(sn.val()))}
+const R=(i,k)=>{const e=$(i);if(e)e.innerHTML=k()};
+const wq=id=>watch("scores/"+id,v=>{S.board=Object.values(v||{});R("#board",rows)});
+const wp=id=>watch("pc/"+id,v=>{S.cnt=v||{};const e=$("#app .card:nth-of-type(1)");if(S.s==="pres")render()});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const item=(id,k,t)=>set(ref(db,`userItems/${S.u.uid}/${id}`),{k,t,ts:Date.now()});
+const A={
+th(){document.documentElement.dataset.theme=T()==="madrid"?"anime":"madrid";try{localStorage.setItem("th",T())}catch(e){}render()},
+async google(){try{await signInWithPopup(au,new GoogleAuthProvider())}catch(e){S.msg="تعذّر الدخول، افتح الرابط من كروم أو سفاري";render()}},
+async out(){await signOut(au);S.s="home";render()},
+home(){S.msg="";if(Q||PL||M)location.href=BASE;else go("home")},
+copy(v,b){navigator.clipboard.writeText(v).then(()=>b.textContent="تم النسخ ✓")},
+tt(v,b){navigator.clipboard.writeText(v).finally(()=>{b.textContent="تم النسخ ✓";open("https://www.tiktok.com/","_blank")})},
+need(k){if(!own()){S.msg="سجّل دخول بحسابك أولاً 👆";render();return}S.msg="";S.name=dn();
+ if(k==="quiz")go("mode");else if(k==="poll"){S.pq=[{q:"",o:["","","",""]}];S.dur=864e5;go("pbuild")}else A.inbox()},
+start(){S.name=own()?dn():S.name;own()?go("gate"):go("name")},
+setname(){const v=$("#nm").value.trim();if(!v){$("#nm").focus();return}S.name=v;go("gate")},
+gate2(){go("gate2")},
+afterGate(){S.i=0;S.ans=[];go("q")},
+mode(v){S.i=0;S.ans=[];S.msg="";S.custom=v==="o";if(v==="r"){S.qs=PRE;go("q")}else{S.cq=[0,1,2].map(()=>({q:"",o:["","",""],c:0}));go("qbuild")}},
+cor(v){const[i,j]=v.split(".");S.cq[i].c=+j;render()},
+addq(){S.cq.push({q:"",o:["","",""],c:0});render()},
+async saveq(){S.msg="";const out=[];
+ for(const c of S.cq){const q=c.q.trim();if(!q&&c.o.every(x=>!x.trim()))continue;const op=c.o.map((t,j)=>({t:t.trim(),j})).filter(x=>x.t);
+  if(!q||op.length<2||!c.o[c.c].trim()){S.msg="كمّل كل سؤال: نص السؤال + خيارين على الأقل + الجواب الصح";render();return}
+  out.push({q,o:op.map(x=>({t:x.t,e:""})),a:op.findIndex(x=>x.j===c.c)})}
+ if(out.length<3){S.msg="أقل شي 3 أسئلة";render();return}
+ S.qs=out;S.ans=out.map(x=>x.a);A.publishQ()},
+async publishQ(){const id=rid();
+ try{await set(ref(db,"quizzes/"+id),{o:S.u.uid,n:S.name,a:S.ans,q:S.custom?S.qs.map(x=>({q:x.q,o:x.o.map(y=>y.t)})):0,ts:Date.now()});await item(id,"q",S.name)}
+ catch(e){S.msg="تعذّر الحفظ، تأكد من القواعد";go(S.custom?"qbuild":"mode");return}
+ S.id=id;S.board=[];go("share");wq(id)},
+async pick(v){if(lock)return;lock=1;const c=+v,bs=document.querySelectorAll(".opt");
+ if(S.fq){const a=S.fq.a[S.i];bs.forEach((b,k)=>b.classList.add(k===a?"ok":k===c?"bad":"dim"))}else bs[c]?.classList.add("sel");
+ await wait(S.fq?1300:450);lock=0;S.ans[S.i]=c;
+ if(S.i<S.qs.length-1){S.i++;render();return}
+ if(S.fq){S.score=S.ans.reduce((a,x,k)=>a+(x===S.fq.a[k]?1:0),0);S.board=[];go("result");wq(Q);
+  try{await set(ref(db,`scores/${Q}/${S.u.uid}`),{n:S.name,s:S.score,t:S.qs.length,ts:Date.now()})}catch(e){}}
+ else A.publishQ()},
+addp(){S.pq.push({q:"",o:["","","",""]});render()},
+async savep(){S.msg="";const q=[];
+ for(const c of S.pq){const o=c.o.map(x=>x.trim()).filter(Boolean);if(!c.q.trim()||o.length<2){S.msg="كمّل كل سؤال: نص السؤال + خيارين على الأقل";render();return}q.push({q:c.q.trim(),o})}
+ const id=rid(),end=Date.now()+Number(S.dur);
+ try{await set(ref(db,"polls/"+id),{o:S.u.uid,n:dn(),q,end,ts:Date.now()});await item(id,"p",q[0].q.slice(0,25))}catch(e){S.msg="تعذّر الحفظ، تأكد من القواعد";render();return}
+ S.pid=id;S.pl={q,end,n:dn()};S.end=end;S.cnt={};go("pres");wp(id)},
+async vote(v){if(lock)return;lock=1;document.querySelectorAll(".opt")[+v]?.classList.add("sel");await wait(400);lock=0;S.pa[S.i]=+v;
+ if(S.i<S.pl.q.length-1){S.i++;render();return}
+ try{await set(ref(db,`pv/${PL}/${S.u.uid}`),true)}catch(e){S.msg="صوّتّ من قبل أو انتهى التصويت";go("pdone");return}
+ for(let i=0;i<S.pa.length;i++)try{await runTransaction(ref(db,`pc/${PL}/${i}/${S.pa[i]}`),x=>(x||0)+1)}catch(e){}
+ S.msg="";go("pdone")},
+async open(v){const[k,id]=v.split(":");
+ if(k==="q"){S.id=id;S.board=[];go("share");wq(id)}
+ else{const d=(await get(ref(db,"polls/"+id))).val();if(!d)return;S.pid=id;S.pl=d;S.end=d.end;S.cnt={};go("pres");wp(id)}},
+async dash(){S.end=0;S.items=(await get(ref(db,"userItems/"+S.u.uid))).val()||{};go("dash")},
+inbox(){S.end=0;S.msgs=[];go("inbox");watch("msgs/"+S.u.uid,v=>{S.msgs=Object.entries(v||{}).sort((a,b)=>b[1].ts-a[1].ts);if(S.s==="inbox")render()})},
+del(k){remove(ref(db,`msgs/${S.u.uid}/${k}`))},
+async send(){const t=S.mt.trim();if(!t){S.msg="اكتب شي أول";render();return}
+ const l=+localStorage.getItem("fqLast")||0;if(Date.now()-l<3e4){S.msg="استنى شوي قبل الرسالة الجاية";render();return}
+ try{await push(ref(db,"msgs/"+M),{t,ts:Date.now()});localStorage.setItem("fqLast",Date.now());S.mt="";S.msg="";go("msent")}catch(e){S.msg="تعذّر الإرسال";render()}},
+again(){S.msg="";go("msend")}
+};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset.v,b)});
+document.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const p=k.split(".");let o=S;while(p.length>1)o=o[p.shift()];o[p[0]]=e.target.value});
+setInterval(()=>{if(!S.end)return;const l=S.end-Date.now(),e=$("#cd");if(e)e.textContent="⏳ "+fmt(l);if(l<=0&&S.s==="pvote"){S.msg="انتهى التصويت";go("pdone")}},1000);
+async function boot(){
+ try{
+  if(Q){const d=(await get(ref(db,"quizzes/"+Q))).val();if(!d)throw 0;S.fq={a:d.a};S.owner=d.n;S.qs=d.q?d.q.map(x=>({q:x.q,o:x.o.map(t=>({t,e:""}))})):PRE;S.s="home"}
+  else if(PL){const d=(await get(ref(db,"polls/"+PL))).val();if(!d)throw 0;S.pl=d;S.end=d.end;const v=(await get(ref(db,`pv/${PL}/${S.u.uid}`))).exists();
+   if(d.end<=Date.now()){S.msg="انتهى التصويت";S.s="pdone"}else if(v){S.msg="صوّتّ من قبل";S.s="pdone"}else S.s="pvote"}
+  else if(M){S.mn=(await get(ref(db,"users/"+M+"/n"))).val();if(!S.mn)throw 0;S.s="msend"}
+ }catch(e){S.s="bad"}
+ render()}
+if(CFG.apiKey){
+ au=getAuth(initializeApp(CFG));db=getDatabase();
+ onAuthStateChanged(au,async u=>{S.u=u;
+  if(!u&&(Q||PL||M)){signInAnonymously(au);return}
+  if(own())set(ref(db,"users/"+u.uid),{n:dn()}).catch(()=>{});
+  if(!S.booted){S.booted=1;await boot()}else render()})
+}else render();
+</script>
+</body>
+</html>
