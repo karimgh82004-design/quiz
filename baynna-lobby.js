@@ -114,7 +114,7 @@
     return { id: st.world, back: st.back, uniform: false };
   }
   function skinB(b, w) { return w.uniform ? (WORLDS[w.id].uniform.b || 0) : b; }
-  function mk(uid) { return crowd[uid] || (crowd[uid] = { x: null, y: null, born: performance.now(), e: '', et: 0, tw: 0, lastT: 0 }); }
+  function mk(uid) { return crowd[uid] || (crowd[uid] = { hu: hash(uid), x: null, y: null, born: performance.now(), e: '', et: 0, tw: 0, lastT: 0 }); }
 
   /* ---------- مزامنة: اختيار الشخصية + ردّة الفعل فقط، بحد أقصى كتابة كل 800ms ---------- */
   var sendT = 0, sendTimer = 0, lastSent = '';
@@ -285,8 +285,8 @@
   }
   function bubble(ctx, text, cx, bottom, W, age, dur) {
     var sc = age < 260 ? ease(age / 260) : age > dur - 220 ? Math.max(0, (dur - age) / 220) : 1; if (sc <= .01) return;
-    ctx.font = '800 13px Cairo,Tahoma,sans-serif';
-    var lines = wrap(ctx, text, 150), w = 0; lines.forEach(function (l) { w = Math.max(w, ctx.measureText(l).width); });
+    ctx.font = BF; var inf = bc[text]; if (!inf) { if (Object.keys(bc).length > 200) bc = {}; var ls = wrap(ctx, text, 150), mw = 0; ls.forEach(function (l) { mw = Math.max(mw, ctx.measureText(l).width); }); inf = bc[text] = { lines: ls, w: mw }; }
+    var lines = inf.lines, w = inf.w;
     w += 20; var h = lines.length * 18 + 12; bottom = Math.max(bottom, h + 14); var  x = Math.min(W - 6 - w / 2, Math.max(6 + w / 2, cx)), tx = Math.max(-w / 2 + 12, Math.min(w / 2 - 12, cx - x));
     ctx.save(); ctx.translate(x, bottom); ctx.scale(sc, sc);
     ctx.fillStyle = 'rgba(255,255,255,.97)'; rr(ctx, -w / 2, -h - 8, w, h, 12); ctx.fill();
@@ -295,8 +295,9 @@
     lines.forEach(function (l, i) { ctx.fillText(l, 0, -h - 8 + 6 + 9 + i * 18); });
     ctx.restore();
   }
+  var wc = {}, bc = {}, PF = '800 12px Cairo,Tahoma,sans-serif', BF = '800 13px Cairo,Tahoma,sans-serif';
   function pill(ctx, text, x, y, fg, bg) {
-    ctx.font = '800 12px Cairo,Tahoma,sans-serif'; var w = ctx.measureText(text).width + 16;
+    ctx.font = PF; var w = wc[text]; if (w == null) { if (Object.keys(wc).length > 300) wc = {}; w = wc[text] = ctx.measureText(text).width + 16; }
     ctx.fillStyle = bg; rr(ctx, x - w / 2, y - 11, w, 22, 11); ctx.fill();
     ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1);
   }
@@ -329,14 +330,14 @@
     var wd = WORLDS[w.id], bi = skinB(a.b, w), ch = wd.chars[bi], spr = img('art/lobby/' + w.id + '-' + bi + '.webp'), c = mk(a.uid), pn = performance.now();
     if (c.x == null) { c.x = a.tx; c.y = a.ty - 40; }
     c.x += (a.tx - c.x) * .1; c.y += (a.ty - c.y) * .1;
-    var h = a.h, k = h / 110, ph = (hash(a.uid) % 1000) / 1000 * 6.283, sp = .85 + (hash(a.uid + 'sp') % 40) / 100;
+    var h = a.h, k = h / 110, ph = (c.hu % 1000) / 1000 * 6.283, sp = c.sp || (c.sp = .85 + (hash(a.uid + 'sp') % 40) / 100);
 
     /* ما الذي يفعله الآن؟ ردّة فعل > رقصة جماعية > رقصة فردية > طبعه الخاص */
     var em = '', emAge = 0, emote = 0;
     if (a.me) { if (me.e && pn - me.et < EMO_MS) { em = me.e; emAge = pn - me.et; emote = me.etw; } }
     else if (c.e && pn - c.et < EMO_MS) { em = c.e; emAge = pn - c.et; emote = c.tw; }
     var cyc = now % GROUP_PERIOD, group = !lite && cyc > GROUP_PERIOD - GROUP_LEN, b = (now % BEAT) / BEAT, bc = Math.floor(now / BEAT);
-    var off = hash(a.uid) % DANCE_PERIOD, kk = Math.floor((now + off) / DANCE_PERIOD), loc = (now + off) % DANCE_PERIOD;
+    var off = c.hu % DANCE_PERIOD, kk = Math.floor((now + off) / DANCE_PERIOD), loc = (now + off) % DANCE_PERIOD;
     var solo = !lite && loc < DANCE_LEN && hash(a.uid + kk) % 3 !== 0;
     rst();
     if (em) {
@@ -384,10 +385,26 @@
     if (bub) late.push(function () { bubble(ctx, bub, c.x, top - 26, W, bubAge, bubDur); });
   }
 
+  /* حارس الأداء: لو الجهاز بطيء ننزّل الجودة تلقائيًا (1: بدون مؤثرات، 2: إطارات أقل ودقة أقل) */
+  var gov = { ema: 0, n: 0, lv: 0 }, errs = 0, dead = false;
   function frame(tm) {
     raf = requestAnimationFrame(frame);
-    if (!arena || !visible || document.hidden) return;
-    var lite = st.lite || reduce, cap = lite || coarse ? 33 : 15; if (tm - (frame.last || 0) < cap) return; frame.last = tm;
+    if (dead || !arena || !visible || document.hidden) return;
+    var lite = st.lite || reduce || gov.lv >= 1, cap = gov.lv >= 2 ? 48 : lite || coarse || list.length > 8 ? 33 : 15; if (tm - (frame.last || 0) < cap) return; frame.last = tm;
+    var t0 = performance.now();
+    try { draw(tm, lite); } catch (e) {
+      if (++errs === 1) try { console.warn('[baynna-lobby] draw error:', e && e.message, e && e.stack); } catch (x) {}
+      if (errs >= 5) killArena('تعذّر عرض الساحة على هذا الجهاز — باقي الغرفة يعمل بشكل طبيعي');
+      return;
+    }
+    var dt = performance.now() - t0; gov.ema = gov.ema * .9 + dt * .1;
+    if (++gov.n % 40 === 0 && gov.ema > 8 && gov.lv < 2) { gov.lv++; if (frame.size) frame.size(); }
+  }
+  function killArena(msg) {
+    dead = true; cancelAnimationFrame(raf);
+    try { var s = arena && arena.querySelector('.lb-stage'); if (s) s.innerHTML = '<p class="lb-mut" style="padding:24px;text-align:center">' + esc(msg) + '</p>'; } catch (e) {}
+  }
+  function draw(tm, lite) {
     var ctx = frame.ctx, W = frame.W, H = frame.H; if (!W || !H) return;
     var w = curWorld(), wd = WORLDS[w.id], now = Date.now(), t = tm / 1000, dpr = frame.dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); background(ctx, w, W, H, dpr);
@@ -419,18 +436,25 @@
   }
   function startLoop() {
     var cv = arena.querySelector('canvas'), stage = arena.querySelector('.lb-stage'); frame.ctx = cv.getContext('2d');
-    function size() { var r = stage.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2); frame.dpr = dpr; frame.W = Math.round(r.width); frame.H = Math.round(r.height); cv.width = frame.W * dpr; cv.height = frame.H * dpr; }
-    size();
-    if (window.ResizeObserver) { ro = new ResizeObserver(size); ro.observe(stage); } else window.addEventListener('resize', size);
+    function size() {
+      var r = stage.getBoundingClientRect(), dpr = gov.lv >= 2 ? 1 : Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2), W = Math.round(r.width), H = Math.round(r.height);
+      if (!W || !H || (W === frame.W && H === frame.H && dpr === frame.dpr)) return;
+      frame.dpr = dpr; frame.W = W; frame.H = H; cv.width = W * dpr; cv.height = H * dpr;
+    }
+    frame.size = size; size();
+    function keepH() { var hh = arena && arena.offsetHeight; if (hh > 80) document.documentElement.style.setProperty('--lb-h', hh + 'px'); }
+    if (window.ResizeObserver) { ro = new ResizeObserver(function () { size(); keepH(); }); ro.observe(stage); ro.observe(arena); } else window.addEventListener('resize', function () { size(); keepH(); });
     if (window.IntersectionObserver) { io = new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0 }); io.observe(stage); }
     cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
   }
   function stopLoop() { cancelAnimationFrame(raf); raf = 0; if (ro) ro.disconnect(); if (io) io.disconnect(); ro = io = null; arena = null; statusEl = null; panelSig = ''; }
 
   /* ---------- التركيب: داخل شاشة انتظار الغرفة فقط ---------- */
-  function place() {
+  var warned = 0;
+  function place() { try { place0(); } catch (e) { if (!warned++) try { console.warn('[baynna-lobby] place error:', e && e.message, e && e.stack); } catch (x) {} } }
+  function place0() {
     var slot = document.getElementById('bnArenaSlot');
-    if (!slot) { if (arena) { if (arena.parentNode) arena.parentNode.removeChild(arena); stopLoop(); previewWorld = null; } return; }
+    if (!slot) { if (arena) { if (arena.parentNode) arena.parentNode.removeChild(arena); stopLoop(); previewWorld = null; dead = false; errs = 0; } return; }
     pull();
     if (!arena) { arena = build(); slot.appendChild(arena); startLoop(); }
     else if (arena.parentNode !== slot) slot.appendChild(arena);
@@ -440,7 +464,12 @@
   function schedule() { if (pending) return; pending = requestAnimationFrame(function () { pending = 0; place(); }); }
   function boot() {
     var app = document.getElementById('app'); if (!app) return setTimeout(boot, 200);
-    new MutationObserver(schedule).observe(app, { childList: true, subtree: true }); place();
+    new MutationObserver(function (ms) { /* تجاهل تغييرات الساحة نفسها: لا حلقات ولا عمل زائد */
+      if (arena) { var ext = false; for (var i = 0; i < ms.length; i++) { if (!arena.contains(ms[i].target)) { ext = true; break; } } if (!ext) return; }
+      schedule();
+    }).observe(app, { childList: true, subtree: true });
+    window.addEventListener('baynna-lb', schedule); /* تغيّر lb فقط: لا إعادة رسم للصفحة */
+    place();
   }
   boot();
 })();

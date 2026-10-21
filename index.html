@@ -11,7 +11,7 @@
 :root[data-theme="dark"]{color-scheme:dark;--bg:#0B1220;--card:#142038;--ink:#F3EEDF;--mut:#A3AEC4;--a:#C6A632;--b:#D8B73F;--soft:#22304E;--line:rgba(243,238,223,.15);--btn:linear-gradient(135deg,#D8B73F,#B08F22);--lg1:#6F5B1B;--lg2:#D8B73F;--inb:#0B1220;--inc:#F3EEDF;--ok:#35c27a;--bad:#ef6a6a;--sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -14px rgba(0,0,0,.75)}
 *{box-sizing:border-box}
 button{-webkit-tap-highlight-color:transparent;font:inherit;color:inherit}
-html,body{margin:0;min-height:100%;max-width:100%;overflow-x:hidden}
+html,body{margin:0;min-height:100%;max-width:100%}html{overflow-x:hidden}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;font-weight:500;line-height:1.65}
 :focus-visible{outline:3px solid #C6A63299;outline-offset:2px}
@@ -305,7 +305,88 @@ button.pl.sel{background:var(--soft);border-color:var(--a)}
 @media(min-width:1100px){#app:has(.rmx){max-width:820px}}
 @media(max-width:380px){.lt{font-size:60px}.rv-a{font-size:19px}.rmx .cd{font-size:23px}}
 </style>
-<link rel="stylesheet" href="./baynna-social.css">
+<style id="polish-layer">
+/* ===== Polish layer: depth, motion, ambient shapes (UI only, no logic changes) ===== */
+:root{--ease-out:cubic-bezier(.23,1,.32,1);--ease-spring:cubic-bezier(.34,1.56,.64,1)}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3{text-wrap:balance}
+#app{animation:pxin .55s var(--ease-out) backwards}
+@keyframes pxin{from{opacity:0;transform:translateY(12px)}}
+
+/* ambient background: soft glows + slow floating shapes */
+.px-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:
+ radial-gradient(60% 45% at 88% -6%,color-mix(in srgb,var(--a) 24%,transparent),transparent 70%),
+ radial-gradient(55% 40% at 4% 106%,color-mix(in srgb,var(--b) 14%,transparent),transparent 70%)}
+.px-bg i{position:absolute;display:block;border:1.5px solid color-mix(in srgb,var(--a) 40%,transparent);border-radius:50%;will-change:transform;animation:pxf 26s ease-in-out infinite alternate}
+.px-bg i:nth-child(1){width:260px;height:260px;top:8%;inset-inline-start:-100px;box-shadow:0 0 0 22px color-mix(in srgb,var(--a) 6%,transparent)}
+.px-bg i:nth-child(2){width:150px;height:150px;top:60%;inset-inline-end:-55px;border-radius:38%;animation-duration:32s;animation-delay:-8s}
+.px-bg i:nth-child(3){width:92px;height:92px;top:32%;inset-inline-end:10%;border-radius:24%;animation-duration:22s;animation-delay:-14s;background:color-mix(in srgb,var(--a) 10%,transparent)}
+@keyframes pxf{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(0,-40px,0) rotate(20deg)}}
+
+/* glass header */
+.top{-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 10px 28px -22px rgba(16,30,59,.5)}
+
+/* layered depth on surfaces */
+.card,.tile{box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 1px 2px rgba(16,30,59,.06),0 16px 32px -20px rgba(16,30,59,.42)}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .tile{box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 36px -20px rgba(0,0,0,.85)}
+.tile.feat{box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 20px 36px -18px #b8962aee}
+
+/* tiles: 3D tilt (driven by JS vars), icon floats above the surface */
+.tile{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--ty,0px));transform-style:preserve-3d;
+ transition:transform .25s var(--ease-out),box-shadow .25s var(--ease-out),border-color .2s}
+.tile .ti{transform:translateZ(22px);transition:transform .3s var(--ease-spring)}
+.tile:active,.btn:active{transform:scale(.97)}
+
+/* buttons: press feel + one gold sheen on hover */
+.btn{position:relative;overflow:hidden;transition:transform .18s var(--ease-out),box-shadow .2s,filter .2s,background-color .2s}
+.btn::after,.tile.feat::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.3) 50%,transparent 62%);transform:translateX(-125%);transition:transform .7s var(--ease-out)}
+.btn.soft::after,.btn.ghost::after{display:none}
+.ib,.me,.tg{transition:transform .18s var(--ease-out),box-shadow .2s,background-color .2s}
+.ib:active,.me:active,.tg:active{transform:scale(.94)}
+@media(hover:hover) and (pointer:fine){
+ .btn:hover::after,.tile.feat:hover::after{transform:translateX(125%)}
+ .btn:hover{transform:translateY(-1px)}
+ .tile:hover{box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 26px 40px -22px rgba(16,30,59,.55)}
+ .tile:hover .ti{transform:translateZ(22px) scale(1.12) rotate(-6deg)}
+}
+
+/* answer/choice controls inside games: quick, springy press */
+.opt,.chip,.pl,.chbtn,.ropt,.seg button{transition:transform .18s var(--ease-out),background-color .18s,border-color .18s,box-shadow .2s}
+.opt:active,.pl:active,.chbtn:active,.ropt:active{transform:scale(.97)}
+
+/* inputs */
+input,textarea,select{transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--a)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--a) 24%,transparent)}
+
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}#app,.px-bg i{animation:none}
+ .tile,.btn,.tile .ti{transition:none}.btn::after,.tile.feat::after{display:none}
+}
+
+/* iOS feel: touch targets, no zoom on focus, safe areas */
+html{-webkit-text-size-adjust:100%}body{padding-bottom:env(safe-area-inset-bottom)}
+button,.btn,.tile,.opt,.chip{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,textarea,select{font-size:16px!important}
+.btn{min-height:44px;border-radius:14px}.card{border-radius:22px}
+</style>
+<script id="polish-js">
+(()=>{const run=()=>{
+ if(!document.querySelector('.px-bg')){const d=document.createElement('div');d.className='px-bg';d.setAttribute('aria-hidden','true');d.innerHTML='<i></i><i></i><i></i>';document.body.prepend(d)}
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches||!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+ let cur=null,raf=0;
+ const reset=t=>{t.style.setProperty('--rx','0deg');t.style.setProperty('--ry','0deg');t.style.setProperty('--ty','0px')};
+ document.addEventListener('pointermove',e=>{
+  const t=e.target.closest&&e.target.closest('.tile');
+  if(cur&&cur!==t){reset(cur);cur=null}
+  if(!t)return;cur=t;cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(()=>{const r=t.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+   t.style.setProperty('--ry',(x*9).toFixed(2)+'deg');t.style.setProperty('--rx',(-y*9).toFixed(2)+'deg');t.style.setProperty('--ty','-3px')})
+ },{passive:true});
+ document.documentElement.addEventListener('mouseleave',()=>{if(cur){reset(cur);cur=null}});
+};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run()})();
+</script>
+
+<link rel="stylesheet" href="baynna-social.css">
 </head>
 <body>
 <div id="app"></div>
@@ -1379,7 +1460,10 @@ function rjoinWrite(){const m=RM;if(!m||m.left||!S.u||m.joining||(m.room&&m.room
  }catch(e){m.jerr=ec(e)}finally{m.joining=0;rrender()}})()}
 
 /* ===== شات الغرفة + الدردشة الصوتية (WebRTC) ===== */
-const ICE={iceServers:[{urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"]}]};
+const ICE={iceServers:[{urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"]},{urls:"turn:global.relay.metered.ca:80",username:"3fd89c3cdd2f7e4b4dddfa8a",credential:"Ye7Qpfrmp2pW1lHM"},{urls:"turn:global.relay.metered.ca:80?transport=tcp",username:"3fd89c3cdd2f7e4b4dddfa8a",credential:"Ye7Qpfrmp2pW1lHM"},{urls:"turn:global.relay.metered.ca:443",username:"3fd89c3cdd2f7e4b4dddfa8a",credential:"Ye7Qpfrmp2pW1lHM"},{urls:"turns:global.relay.metered.ca:443?transport=tcp",username:"3fd89c3cdd2f7e4b4dddfa8a",credential:"Ye7Qpfrmp2pW1lHM"}],iceCandidatePoolSize:4};
+function vplay(a){try{const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+function vunlock(){const V=VC;if(!V)return;Object.values(V.au).forEach(a=>{if(a.paused||a.readyState<2)vplay(a)})}
+["pointerdown","touchend","click"].forEach(t=>document.addEventListener(t,vunlock,{passive:true,capture:true}));
 let CH=null,VC=null;
 function chatMount(m){chatUnmount();const me=S.u.uid,d=document.createElement("div");d.id="chroot";
  d.innerHTML=`<div class="chd"><button id="chb" class="chbtn" aria-label="فتح دردشة الغرفة">💬 <span>الدردشة</span><i id="chu" hidden></i></button><button id="vcb" class="chbtn" aria-label="الانضمام للصوت أو كتم المايك">🎙️ <span>انضم للصوت</span></button><button id="vcx" class="chbtn" hidden aria-label="الخروج من الصوت">📴 <span>خروج من الصوت</span></button></div><div id="chp" class="chp" hidden><div class="chh"><b>💬 شات الغرفة</b><button id="chc" class="chbtn sm">✕</button></div><div id="chv" class="chv small"></div><div id="chl" class="chl"></div><div class="chi"><input id="chi" maxlength="300" placeholder="اكتب رسالة..." autocomplete="off"><button id="chs" class="chbtn sm go">➤</button></div></div>`;
@@ -1404,12 +1488,12 @@ function vsend(u,type,data){if(!VC)return;push(ref(db,`roomSig/${VC.m.code}/${u}
 function vpClose(u){const V=VC;if(!V)return;const pc=V.pc[u];if(pc){try{pc.close()}catch(e){}delete V.pc[u]}const a=V.au[u];if(a){a.srcObject=null;a.remove();delete V.au[u]}}
 function vpOpen(u,init){const V=VC,me=S.u.uid,pc=new (window.RTCPeerConnection||window.webkitRTCPeerConnection)(ICE);V.pc[u]=pc;V.q[u]=[];V.st.getTracks().forEach(t=>pc.addTrack(t,V.st));
  pc.onicecandidate=e=>{if(e.candidate)vsend(u,"ice",JSON.stringify(e.candidate))};
- pc.ontrack=e=>{let a=V.au[u];if(!a){a=V.au[u]=document.createElement("audio");a.autoplay=true;a.setAttribute("playsinline","");document.body.appendChild(a)}a.srcObject=e.streams[0];a.play().catch(()=>{})};
- pc.onconnectionstatechange=()=>{if(VC===V&&V.pc[u]===pc&&pc.connectionState==="failed"){vpClose(u);setTimeout(()=>{if(VC===V&&CH&&(CH.vmem||{})[u]&&!V.pc[u])vpOpen(u,me<u)},1500)}};
+ pc.ontrack=e=>{let a=V.au[u];if(!a){a=V.au[u]=document.createElement("audio");a.autoplay=true;a.setAttribute("playsinline","");document.body.appendChild(a)}a.setAttribute("webkit-playsinline","");a.muted=false;a.volume=1;a.srcObject=e.streams[0]||new MediaStream([e.track]);vplay(a)};
+ pc.onconnectionstatechange=()=>{if(VC===V&&V.pc[u]===pc&&pc.connectionState==="failed"){if(!V.warned){V.warned=1;toast("تعذّر الاتصال الصوتي مع أحد اللاعبين. جرّب Wi‑Fi بدل بيانات الجوال")}vpClose(u);setTimeout(()=>{if(VC===V&&CH&&(CH.vmem||{})[u]&&!V.pc[u])vpOpen(u,me<u)},1500)}};
  if(init)pc.createOffer().then(o=>pc.setLocalDescription(o).then(()=>vsend(u,"offer",JSON.stringify(pc.localDescription)))).catch(()=>{});return pc}
 async function vflush(u){const V=VC;if(!V)return;const pc=V.pc[u],q=V.q[u]||[];V.q[u]=[];for(const c of q)await pc.addIceCandidate(c).catch(()=>{})}
 async function voiceJoin(){const m=CH&&CH.m;if(!m||VC)return;
- if(!(window.RTCPeerConnection||window.webkitRTCPeerConnection)){toast("المتصفح هاد ما بيدعم الصوت (WebRTC). جرّب Safari أو Chrome حديث");return}
+ if(!(window.RTCPeerConnection||window.webkitRTCPeerConnection)){toast("المتصفح هاد ما بيدعم الصوت (WebRTC). على الآيفون: إذا كان وضع الإغلاق (Lockdown Mode) مفعّل، استثنِ الموقع من إعدادات Safari");return}
  if(!window.isSecureContext){toast("الصوت يحتاج رابط HTTPS. افتح الموقع من رابطه الآمن مباشرة.");return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast("المتصفح لا يتيح المايك. افتح الرابط بـ Safari أو Chrome مباشرة، وليس من داخل تطبيق آخر.");return}
  const me=S.u.uid;let cur={};try{cur=(await W(get(ref(db,"roomVoice/"+m.code)),6000)).val()||{}}catch(e){}
@@ -1423,7 +1507,7 @@ async function voiceJoin(){const m=CH&&CH.m;if(!m||VC)return;
    else if(g.type==="answer"){const pc=V.pc[u];if(pc&&pc.signalingState==="have-local-offer"){await pc.setRemoteDescription(d);await vflush(u)}}
    else if(g.type==="ice"){const pc=V.pc[u];if(!pc)return;if(pc.remoteDescription)await pc.addIceCandidate(d).catch(()=>{});else V.q[u].push(d)}}catch(e){}},()=>{}));
  V.ctx=null;V.raf=0;V.speaking=false;try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){V.ctx=new AC();const src=V.ctx.createMediaStreamSource(V.st),an=V.ctx.createAnalyser();an.fftSize=512;src.connect(an);const data=new Uint8Array(an.fftSize);const tick=()=>{if(VC!==V||!V.ctx)return;an.getByteTimeDomainData(data);let sum=0;for(let i=0;i<data.length;i++){const z=(data[i]-128)/128;sum+=z*z}const level=Math.sqrt(sum/data.length),talk=!V.muted&&level>.035;if(talk!==V.speaking){V.speaking=talk;update(ref(db,`roomVoice/${m.code}/${me}`),{speaking:talk}).catch(()=>{});vui();if(CH)rrender()}V.raf=requestAnimationFrame(tick)};tick()}}catch(e){}
- vsync();toast("دخلت الدردشة الصوتية 🎙️") }
+ vsync();vunlock();toast("دخلت الدردشة الصوتية 🎙️") }
 function voiceLeave(){const V=VC;if(!V){if(CH)vui();return}VC=null;if(V.raf)cancelAnimationFrame(V.raf);try{V.ctx&&V.ctx.close()}catch(e){}V.un.forEach(f=>{try{f()}catch(e){}});Object.values(V.pc).forEach(pc=>{try{pc.close()}catch(e){}});Object.values(V.au).forEach(a=>{a.pause?.();a.srcObject=null;a.remove()});V.st.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
  if(S.u){const vr=ref(db,`roomVoice/${V.m.code}/${S.u.uid}`);try{onDisconnect(vr).cancel()}catch(e){}remove(vr).catch(()=>{});remove(ref(db,`roomSig/${V.m.code}/${S.u.uid}`)).catch(()=>{})}vui()}
 addEventListener("pagehide",()=>{try{voiceLeave()}catch(e){}});addEventListener("beforeunload",()=>{try{voiceLeave()}catch(e){}});
@@ -1444,10 +1528,10 @@ function rOpen(code){if(RM)rexit();
   tbSubs(m,v,code);gsub(m,v,code);
   if(v.game==="rdraw"&&v.phase==="drawResult"){const dk=String(v.gen||0)+"_"+String(v.round||0);if(m.drawSubKey!==dk){if(m.drawUnsub)m.drawUnsub();m.drawSubKey=dk;m.drawings={};m.drawUnsub=onValue(ref(db,`roomDrawings/${code}/${dk}`),ss=>{if(RM!==m)return;m.drawings=ss.val()||{};rrender()},()=>{})}}else if(m.drawSubKey){if(m.drawUnsub)m.drawUnsub();m.drawUnsub=null;m.drawSubKey=null;m.drawings={}}
   if(S.s!=="room")go("room");else rrender()},fail));
- m.u.push(onValue(ref(db,"roomPlayers/"+code),s=>{if(RM!==m)return;const v=s.val()||{};const oldP=m.players||{};if(m.did&&!m.left){Object.keys(oldP).forEach(u=>{if(u!==S.u.uid&&!v[u]&&!(m.room&&m.room.kick&&m.room.kick[u])){const nm=(m.names&&m.names[u]&&m.names[u].n)||"لاعب";toast("🚪 "+nm+" غادر اللعبة")}})}m.players=v;
+ m.u.push(onValue(ref(db,"roomPlayers/"+code),s=>{if(RM!==m)return;const v=s.val()||{};const oldP=m.players||{};if(m.did&&!m.left){Object.keys(oldP).forEach(u=>{if(u!==S.u.uid&&!v[u]&&!(m.room&&m.room.kick&&m.room.kick[u])){const nm=(m.names&&m.names[u]&&m.names[u].n)||"لاعب";toast("🚪 "+nm+" غادر اللعبة")}})}const same=m.did&&(()=>{const ka=Object.keys(v),kb=Object.keys(oldP);if(ka.length!==kb.length)return false;for(const u of ka){const x=v[u],y=oldP[u];if(!x||!y)return false;for(const k in x){if(k==="lb")continue;if(x[k]!==y[k]&&JSON.stringify(x[k])!==JSON.stringify(y[k]))return false}for(const k in y){if(k!=="lb"&&!(k in x))return false}}return true})();m.players=v;
   Object.values(v).forEach(p=>{if(p&&p.uid)m.names[p.uid]={n:String(p.name||"لاعب"),av:typeof p.avatar==="string"?p.avatar:""}});
   if(!m.did){if(Object.keys(v).length>=MAXP&&!v[S.u.uid]){rexit();S.msg="الغرفة ممتلئة (الحد الأقصى "+MAXP+" لاعب)";go("rgone");return}m.did=1;rjoinWrite()}
-  rrender()},fail));
+  if(same)window.dispatchEvent(new Event("baynna-lb"));else rrender()},fail));
  subR(m,"roomVotes/"+code,s=>{if(RM!==m)return;m.votes=s.val()||{};rrender()});
   subR(m,"roomTruthDone/"+code,s=>{if(RM!==m)return;m.tdone=s.val()||{};rrender()});
  m.u.push(onValue(ref(db,".info/connected"),s=>{if(s.val()===true&&RM===m&&m.did){rjoinWrite();if(m.host)armHost(m)}},()=>{}))}
@@ -1594,6 +1678,13 @@ function rStnRoom(r){const m=RM,host=m.host,players=rpl(),me=S.u.uid,cats=RSTN_C
    +(done?`<p class="ok">🔒 إجاباتك انقفلت ولا يمكن تعديلها.</p>`:btn("rstnfinish","🔒 إرسال نهائي","","gold")+`<p class="small">بتنقفل إجاباتك عند انتهاء الوقت أو لما ترسلها نهائيًا، والمضيف بيعتمد الصحيح منها.</p>`)
    +`<p class="small">أرسلوا: ${n} من ${players.length}</p><div class="pbar"><i style="width:${players.length?Math.round(n/players.length*100):0}%"></i></div>`)+board}
 
+
+/* ===== جسر الساحة (baynna-lobby.js): واجهة صغيرة ومحدودة، لا تكشف db ولا تسمح بكتابة إلا في سجل اللاعب نفسه أو إعدادات العالم للمضيف ===== */
+window.BaynnaNet={
+ state(){const m=RM;if(!m||!m.room||!S.u)return null;const r=m.room;return{code:m.code,uid:S.u.uid,host:m.host,owner:r.owner||"",world:r.world||null,lobby:r.status==="waiting"||r.phase==="lobby",players:rpl().map(p=>({uid:p.uid,name:String(p.name||"لاعب").slice(0,20),lb:p.lb||null}))}},
+ pose(lb){const m=RM;if(!m||m.left||!m.did||!S.u)return Promise.resolve(false);return W(update(ref(db,`roomPlayers/${m.code}/${S.u.uid}`),{lb}),6000).then(()=>true,()=>false)},
+ setWorld(w){const m=RM;if(!m||!m.host||!S.u)return Promise.resolve(false);return W(update(ref(db,"rooms/"+m.code),{world:w}),6000).then(()=>true,()=>false)}
+};
 function rLobby(r){const pl=rpl(),host=RM.host,link=BASE+"?r="+RM.code,queue=Array.isArray(r.gameQueue)?r.gameQueue:[],sel=r.setupGames?(queue.find(k=>RG[k])||null):(RG[r.game]?r.game:null),G=sel?RG[sel]:null,need=sel?rmin({game:sel}):2,lack=need-pl.length;
  const wa="https://wa.me/?text="+encodeURIComponent(`تعال العب معنا على بيننا 🎉\nكود الغرفة: ${RM.code}\n${link}`);
  const pick=host?card(`<h2>🎮 اختار لعبة وحدة</h2><p class="small">الغرفة بتلعب لعبة وحدة كل مرة. بعد ما تخلص المباراة بترجعوا لنفس الغرفة وبتختار لعبة ثانية بدون ما حدا يطلع.</p><div class="list">${Object.entries(RG).map(([k,x])=>`<button class="opt ${sel===k?"sel":""}" data-a="rgamepick" data-v="${k}" aria-pressed="${sel===k}"><span>${x.i}</span><div class="ot"><b>${x.n}</b><small>${x.d}</small></div><b>${sel===k?"✓":"○"}</b></button>`).join("")}</div>`):card(G?`<div class="small">اللعبة الحالية للغرفة</div><div class="hero">${G.i}</div><h2>${G.n}</h2><p class="small">${G.d}</p>`:`<div class="hero">⏳</div><h2>المضيف بيختار اللعبة</h2><p class="small">لما يختار، بتظهر هون وبيكون كل اللاعبين جاهزين إلها.</p>`);
@@ -1876,7 +1967,7 @@ rnew:()=>renderRoomNew(),
 rname:()=>card(`<h2>قبل ما تدخل 👋</h2><p class="small">اختار اسمك وصورتك، وبتدخل الغرفة جاهز على طول</p>${avPicker()}<input class="t" id="rnin" data-k="pn" maxlength="20" placeholder="اسمك المستعار..." value="${esc(S.pn)}" autocomplete="nickname">${btn("rnameok","ادخل الغرفة 🎉","","gold")}${err()}`),
 rgone:()=>card(`<div class="hero">🚪</div><h2>${esc(S.msg||"الغرفة انتهت")}</h2>${btn("home","الصفحة الرئيسية")}`),
 room:()=>rmx(rwrap((()=>{const r=RM&&RM.room;if(!r)return card(`<div class="hero">⏳</div><h2>${RM&&RM.err?"تعذّر فتح الغرفة":"لحظة..."}</h2>${RM&&RM.err?`<p class="small err" dir="ltr">${esc(RM.err)}</p>${btn("rleave","رجوع","","ghost")}`:""}`);
- if(r.status==="waiting"||r.phase==="lobby")return rLobby(r);
+ if(r.status==="waiting"||r.phase==="lobby")return `<div id="bnArenaSlot"></div>`+rLobby(r);
  if(GK.includes(r.game))return rGame(r);if(r.game==="rstn")return rStnRoom(r);if(r.game==="rtaboo")return rTabooRoom(r);if(r.game==="rdraw")return rDrawRoom(r);if(r.game==="rtruth")return rTruthRoom(r);
  if(r.game==="mafia")return rMafiaRoom(r);
  if(r.phase==="vote")return rVote(r);
@@ -2353,9 +2444,9 @@ async rreplay(){const m=RM;if(!m||!m.host)return;const r=m.room,qs=shuf((r.game=
  try{await W(update(ref(db,"rooms/"+m.code),{gen:(r.gen||0)+1,status:"waiting",phase:"lobby",round:0,qs}))}catch(e){S.msg="تعذّر البدء من جديد ("+ec(e)+")";render()}},
 async rkick(v){if(!RM||!RM.host)return;const u=String(v);
  try{await W(update(ref(db,"rooms/"+RM.code),{["kick/"+u]:true}));remove(ref(db,`roomPlayers/${RM.code}/${u}`)).catch(()=>{})}catch(e){toast("تعذّر الإخراج ("+ec(e)+")")}},
-async rleave(){if(!RM)return;const host=RM.host,code=RM.code;
+async rleave(){if(!RM)return;const host=RM.host,code=RM.code,wasRout=!!(RM.room&&RM.room.game==="rout");
  if(!confirm(host?"تنهي الغرفة للجميع؟":"بدك تطلع من الغرفة؟"))return;
- if(host){try{await W(update(ref(db,"rooms/"+code),{closed:true,closedAt:Date.now()}),4000)}catch(e){}if(RM.room&&RM.room.game==="rout"){try{await outCall("end",{code})}catch(e){}}try{await W(remove(ref(db,"roomPlayers/"+code)),4000)}catch(e){}try{await W(remove(ref(db,"roomVotes/"+code)),4000)}catch(e){}for(const k of["roomDrawings","roomMafiaPrivate","roomMafiaActions","roomOutPrivate","roomOutActions","roomTruthStmts","roomTruthPrivate","roomTruthVotes","roomTruthDone","roomChat","roomVoice","roomSig"]){try{await W(remove(ref(db,k+"/"+code)),4000)}catch(e){}}try{await W(remove(ref(db,"rooms/"+code)),4000)}catch(e){}}
+ if(host){try{await W(update(ref(db,"rooms/"+code),{closed:true,closedAt:Date.now()}),4000)}catch(e){}if(wasRout){try{await outCall("end",{code})}catch(e){}}try{await W(remove(ref(db,"roomPlayers/"+code)),4000)}catch(e){}try{await W(remove(ref(db,"roomVotes/"+code)),4000)}catch(e){}for(const k of["roomDrawings","roomMafiaPrivate","roomMafiaActions","roomOutPrivate","roomOutActions","roomTruthStmts","roomTruthPrivate","roomTruthVotes","roomTruthDone","roomChat","roomVoice","roomSig"]){try{await W(remove(ref(db,k+"/"+code)),4000)}catch(e){}}try{await W(remove(ref(db,"rooms/"+code)),4000)}catch(e){}}
  rexit();go("home")},
 async rnextgame(){await A.rgreset()},
 
@@ -2457,21 +2548,21 @@ async function boot(){
  render()}
 /* Presentation helpers. Existing actions, authentication and game logic are unchanged. */
 const SOCIAL_STICKERS=[['ضحك هستيري','لما النكتة توصل متأخر'],['صدمة وذهول','لحظة استيعاب'],['إحراج وندم','يا ريتني سكتت'],['انتصار وفوز','أنا الأسطورة'],['خسارة وفشل','كانت قريبة والله'],['شك واستغراب','مش مقتنع بصراحة']];
-const socialImg=(i,alt,cls='')=>`<img class="${cls}" src="./art/sticker-${i}.webp" alt="${alt}" loading="lazy" width="512" height="512">`;
+const socialImg=(i,alt,cls='')=>`<img class="${cls}" src="art/sticker-${i}.webp" alt="${alt}" loading="lazy" width="512" height="512">`;
 const socialHeader=()=>`<div class="top">${logo()}<nav class="site-nav" aria-label="التنقل الرئيسي"><a href="#games">الألعاب</a><a href="#reels">ضحكنا اليوم</a><a href="#stickers">الستيكرات</a><a href="#all-games">اكتشف أكثر</a></nav><button class="me" data-a="menu" aria-label="قائمة الحساب" aria-haspopup="true">${av(S.avatar,34,S.alias||'زائر')}<span class="mn">${esc(S.alias||'يا هلا!')}</span><span class="cv">⌄</span></button><div class="menu" id="hmenu" hidden><button data-a="profile">ملفي الشخصي</button>${own()?'<button data-a="dash">مساحتي</button>':''}<button data-a="home">الصفحة الرئيسية</button><button data-a="th">تغيير المظهر</button><hr>${own()?'<button data-a="out">تسجيل الخروج</button>':'<button data-a="google">الدخول بحساب Google</button>'}</div></div>`;
-const socialTile=(a,t,d,i,word='',badge='')=>`<button class="social-game" data-a="need" data-v="${a}"><div class="game-cover">${badge?`<span class="game-badge">${badge}</span>`:''}${({rooms:0,wheel:1,tod:1,drawing:2,challenge:3,memory:3,emojiquiz:3,truth:4,outsider:4,mafiaSolo:4,quiz:5,msg:5,poll:5,stn:2})[a]!=null?`<img src="./art/object-${({rooms:0,wheel:1,tod:1,drawing:2,challenge:3,memory:3,emojiquiz:3,truth:4,outsider:4,mafiaSolo:4,quiz:5,msg:5,poll:5,stn:2})[a]}.webp" alt="${t}" loading="lazy" width="512" height="512">`:socialImg(i,t)}<span class="cover-word">${word}</span></div><div class="game-info"><b>${t}</b><small>${d}</small><span class="game-arrow" aria-hidden="true">↖</span></div></button>`;
+const socialTile=(a,t,d,i,word='',badge='')=>`<button class="social-game" data-a="need" data-v="${a}"><div class="game-cover">${badge?`<span class="game-badge">${badge}</span>`:''}${({rooms:0,wheel:1,tod:1,drawing:2,challenge:3,memory:3,emojiquiz:3,truth:4,outsider:4,mafiaSolo:4,quiz:5,msg:5,poll:5,stn:2})[a]!=null?`<img src="art/object-${({rooms:0,wheel:1,tod:1,drawing:2,challenge:3,memory:3,emojiquiz:3,truth:4,outsider:4,mafiaSolo:4,quiz:5,msg:5,poll:5,stn:2})[a]}.webp" alt="${t}" loading="lazy" width="512" height="512">`:socialImg(i,t)}<span class="cover-word">${word}</span></div><div class="game-info"><b>${t}</b><small>${d}</small><span class="game-arrow" aria-hidden="true">↖</span></div></button>`;
 const socialHead=(id,title,sub,side='')=>`<div class="section-head" id="${id}"><div><h2><span class="accent-mark" aria-hidden="true">✳</span>${title}</h2>${sub?`<p>${sub}</p>`:''}</div>${side}</div>`;
 function socialHome(welcome=false){
  const featured=socialTile('rooms','غرف اللعب الجماعي','لمّ الشلة… والباقي علينا',0,'الشلة أونلاين','للشلة كلها')+socialTile('who','مين فينا؟','خلّينا نعرف مين المقصود!',5,'مين؟ أنا؟!')+socialTile('quiz','اختبار مين بيعرفني','صحاب بجد ولا مجرد متابعين؟',1,'بتعرفني؟')+socialTile('challenge','تحدّي المعلومات والقدرات','ورّينا شطارتك بعيد عن Google',3,'قدّها؟','تحدّي نفسك');
  const more=socialTile('truth','حقيقتين وكذبة','مين أستاذ التأليف بالشلة؟',5,'كاشفك!')+socialTile('wyr','لو خيروك','اختيارات أصعب من الامتحانات',2,'اختار مصيبتك')+socialTile('emojiquiz','فكّ شفرة الإيموجي','فيلم؟ مثل؟ فكّ الشفرة!',1,'شو يعني؟')+socialTile('wheel','دولاب الحظ','دوّرها… ونشوف مين الضحية',3,'الحظ والنصيب')+socialTile('tod','صراحة أو جرأة','سؤال محرج ولا تحدّي أجرأ؟',2,'قول الصراحة')+socialTile('drawing','لعبة الرسم','مو مهم ترسم… المهم نضحك',0,'بيكاسو الشلة')+socialTile('memory','ذاكرة الإيموجي','ذاكرتك حديد ولا ذاكرة سمكة؟',1,'ركّز معي')+socialTile('taboo','ممنوع تحكيها','اشرحها… بس مش بهاي الكلمة',2,'ششش!')+socialTile('outsider','برا السالفة','واحد مش فاهم… مين هو؟',5,'شكلك مش معنا')+socialTile('stn','اسم، نبات، جماد، حيوان، بلاد','حرف واحد… ومنافسة كبيرة',3,'حرف واسم')+socialTile('mafiaSolo','مافيا','أدوار سرية على جوال واحد',5,'لا تثق بحدا')+socialTile('poll','التصويت','خلّي الشلة تحسم الموضوع',1,'الجمهور يقرر')+socialTile('msg','رسالة من مجهول','الكلام إلك… والاسم سر',2,'مين باعتها؟')+`<a class="social-game" href="#newtests"><div class="game-cover">${socialImg(1,'اختبارات الشخصية والعلاقات')}<span class="cover-word">اكتشف حالك</span></div><div class="game-info"><b>اختبارات الشخصية والعلاقات</b><small>12 اختبارًا مع النتائج والمصادر</small><span class="game-arrow">↖</span></div></a>`;
- return `${welcome?socialHeader():''}<main class="social-home"><section class="social-hero"><img class="hero-art" src="./art/meme-collage.jpg" alt="قصاصات قطط مضحكة وضفدع وألعاب وملصقات بيننا" width="1536" height="864" fetchpriority="high"><div class="social-copy"><div class="eyebrow">مساحتك أنت وأصحابك. على أصولها.</div><h1>من الميمز للألعاب،<br>كل شي <span>بيننا!</span></h1><p>لمّ أصحابك، اختاروا لعبة، وخلّوا الضحك علينا.</p><div class="hero-actions"><button class="btn gold" data-a="need" data-v="rooms">يلا نلعب سوا <span aria-hidden="true">↖</span></button><a class="btn soft" href="#games">اكتشف الألعاب</a></div></div><span class="hero-caption">الضحك الجماعي له ناسه ↗</span></section><div class="ticker"><span>صحاب + ألعاب = ذكريات</span><i>✦</i><span>ممنوع الجدية الزايدة</span><i>✦</i><span>كلنا هون عشان ننبسط</span><i>✦</i><span>خليك على طبيعتك</span></div>${welcome?`<div class="welcome-strip"><div><b>أهلًا في الشلة!</b><small>شو الاسم اللي بتحب نناديك فيه؟</small></div><input class="t" id="aliasInput" maxlength="20" autocomplete="nickname" aria-label="اسمك المستعار" placeholder="اسمك المستعار…" value="${esc(S.alias)}">${btn('saveAlias','يلا نفوت ←')}${err()}</div>`:`<div class="auth-note"><span>أهلًا ${esc(S.alias||'صاحبنا')}، شو بدنا نلعب اليوم؟</span>${own()?btn('dash','مساحتي','','soft'):btn('google','الدخول بحساب Google','','soft')}</div>${err()}`}${socialHead('games','اللمة بدها لعبة','اختاروا لعبتكم… وخلّوا المنافسة تبدأ','<a class="section-link" href="#all-games">كل الألعاب ←</a>')}<div class="featured-grid">${featured}</div><section class="group-banner">${socialImg(0,'ضحكة الشلة')}<div><h3>الشلة ناقصها أنت!</h3><p>غرفة واحدة. ألعاب كثيرة. وذكريات ما بتخلص.</p></div><button class="btn" data-a="need" data-v="rooms">افتحوا غرفة لعب ←</button></section><section>${socialHead('reels','ضحكنا اليوم','لما الميم يحكي اللي بقلبك','<span class="live-tag">لقطات تجريبية ثابتة</span>')}<div class="reels-track">${['لما صاحبك يحكي: سؤال سهل','أنا بعد أول إجابة غلط','صاحبك اللي دايمًا برا السالفة','لما تفوز وتعمل حالك متواضع','لما الشلة تقول آخر جولة'].map((t,i)=>`<article class="reel"><img src="./art/reel-${i}.webp" alt="${t}" width="400" height="580" loading="lazy"><span class="still-label">ميم ثابت · مش فيديو</span><span class="reel-icon" aria-hidden="true">▷</span><div class="reel-meta"><b>${t}</b><small>من أجواء بيننا</small></div></article>`).join('')}</div></section><section>${socialHead('all-games','على مزاج الشلة','ألعاب سريعة، أسرار، وتحديات… اختار الجو اللي بناسبكم')}<div class="games-nav" role="group" aria-label="تصنيفات الألعاب"><button class="filter-btn on" data-social-filter="all">كل الألعاب</button><button class="filter-btn" data-social-filter="party">ألعاب الشلة</button><button class="filter-btn" data-social-filter="challenge">ذكاء وتحديات</button><button class="filter-btn" data-social-filter="social">اختبارات وتفاعل</button></div><div class="featured-grid more-games">${more}</div></section><section class="stickers-section">${socialHead('stickers','ردّها بستيكر!','في ردود ما بدها حكي.','<span class="section-link">من مكتبة بيننا</span>')}<div class="sticker-tabs" role="group" aria-label="تصنيفات الستيكرات"><button class="filter-btn on" data-sticker-filter="all">الكل</button>${SOCIAL_STICKERS.map(([t],i)=>`<button class="filter-btn" data-sticker-filter="${i}">${t}</button>`).join('')}<button class="filter-btn" data-sticker-filter="reactions">ردود على الأصحاب</button></div><div class="sticker-grid">${SOCIAL_STICKERS.map(([t,d],i)=>`<button class="sticker-item" data-sticker="${i}" aria-label="${t}: ${d}">${socialImg(i,t)}<b>${d}</b></button>`).join('')}</div></section><footer class="social-foot"><div><strong>بيننا</strong>ضحك. لعب. وأصحاب.</div><div><a href="${IG}" target="_blank" rel="noopener">Instagram ↗</a><a href="${TK}" target="_blank" rel="noopener">TikTok ↗</a></div></footer></main>`;
+ return `${welcome?socialHeader():''}<main class="social-home"><section class="social-hero"><img class="hero-art" src="art/meme-collage.jpg" alt="قصاصات قطط مضحكة وضفدع وألعاب وملصقات بيننا" width="1536" height="864" fetchpriority="high"><div class="social-copy"><div class="eyebrow">مساحتك أنت وأصحابك. على أصولها.</div><h1>من الميمز للألعاب،<br>كل شي <span>بيننا!</span></h1><p>لمّ أصحابك، اختاروا لعبة، وخلّوا الضحك علينا.</p><div class="hero-actions"><button class="btn gold" data-a="need" data-v="rooms">يلا نلعب سوا <span aria-hidden="true">↖</span></button><a class="btn soft" href="#games">اكتشف الألعاب</a></div></div><span class="hero-caption">الضحك الجماعي له ناسه ↗</span></section><div class="ticker"><span>صحاب + ألعاب = ذكريات</span><i>✦</i><span>ممنوع الجدية الزايدة</span><i>✦</i><span>كلنا هون عشان ننبسط</span><i>✦</i><span>خليك على طبيعتك</span></div>${welcome?`<div class="welcome-strip"><div><b>أهلًا في الشلة!</b><small>شو الاسم اللي بتحب نناديك فيه؟</small></div><input class="t" id="aliasInput" maxlength="20" autocomplete="nickname" aria-label="اسمك المستعار" placeholder="اسمك المستعار…" value="${esc(S.alias)}">${btn('saveAlias','يلا نفوت ←')}${err()}</div>`:`<div class="auth-note"><span>أهلًا ${esc(S.alias||'صاحبنا')}، شو بدنا نلعب اليوم؟</span>${own()?btn('dash','مساحتي','','soft'):btn('google','الدخول بحساب Google','','soft')}</div>${err()}`}${socialHead('games','اللمة بدها لعبة','اختاروا لعبتكم… وخلّوا المنافسة تبدأ','<a class="section-link" href="#all-games">كل الألعاب ←</a>')}<div class="featured-grid">${featured}</div><section class="group-banner">${socialImg(0,'ضحكة الشلة')}<div><h3>الشلة ناقصها أنت!</h3><p>غرفة واحدة. ألعاب كثيرة. وذكريات ما بتخلص.</p></div><button class="btn" data-a="need" data-v="rooms">افتحوا غرفة لعب ←</button></section><section>${socialHead('reels','ضحكنا اليوم','لما الميم يحكي اللي بقلبك','<span class="live-tag">لقطات تجريبية ثابتة</span>')}<div class="reels-track">${['لما صاحبك يحكي: سؤال سهل','أنا بعد أول إجابة غلط','صاحبك اللي دايمًا برا السالفة','لما تفوز وتعمل حالك متواضع','لما الشلة تقول آخر جولة'].map((t,i)=>`<article class="reel"><img src="art/reel-${i}.webp" alt="${t}" width="400" height="580" loading="lazy"><span class="still-label">ميم ثابت · مش فيديو</span><span class="reel-icon" aria-hidden="true">▷</span><div class="reel-meta"><b>${t}</b><small>من أجواء بيننا</small></div></article>`).join('')}</div></section><section>${socialHead('all-games','على مزاج الشلة','ألعاب سريعة، أسرار، وتحديات… اختار الجو اللي بناسبكم')}<div class="games-nav" role="group" aria-label="تصنيفات الألعاب"><button class="filter-btn on" data-social-filter="all">كل الألعاب</button><button class="filter-btn" data-social-filter="party">ألعاب الشلة</button><button class="filter-btn" data-social-filter="challenge">ذكاء وتحديات</button><button class="filter-btn" data-social-filter="social">اختبارات وتفاعل</button></div><div class="featured-grid more-games">${more}</div></section><section class="stickers-section">${socialHead('stickers','ردّها بستيكر!','في ردود ما بدها حكي.','<span class="section-link">من مكتبة بيننا</span>')}<div class="sticker-tabs" role="group" aria-label="تصنيفات الستيكرات"><button class="filter-btn on" data-sticker-filter="all">الكل</button>${SOCIAL_STICKERS.map(([t],i)=>`<button class="filter-btn" data-sticker-filter="${i}">${t}</button>`).join('')}<button class="filter-btn" data-sticker-filter="reactions">ردود على الأصحاب</button></div><div class="sticker-grid">${SOCIAL_STICKERS.map(([t,d],i)=>`<button class="sticker-item" data-sticker="${i}" aria-label="${t}: ${d}">${socialImg(i,t)}<b>${d}</b></button>`).join('')}</div></section><footer class="social-foot"><div><strong>بيننا</strong>ضحك. لعب. وأصحاب.</div><div><a href="${IG}" target="_blank" rel="noopener">Instagram ↗</a><a href="${TK}" target="_blank" rel="noopener">TikTok ↗</a></div></footer></main>`;
 }
 document.addEventListener('click',e=>{const link=e.target.closest('.site-nav a');if(link&&!document.querySelector('.social-home')){e.preventDefault();A.home();requestAnimationFrame(()=>document.querySelector(link.getAttribute('href'))?.scrollIntoView({behavior:'smooth'}))}});
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-social-filter],[data-sticker-filter],[data-sticker],[data-sticker-close]');if(!b)return;
  if(b.hasAttribute('data-social-filter')){const f=b.dataset.socialFilter;document.querySelectorAll('[data-social-filter]').forEach(x=>x.classList.toggle('on',x===b));const groups={party:['truth','wyr','wheel','tod','taboo','outsider','drawing','mafiaSolo','stn'],challenge:['emojiquiz','memory','stn'],social:['poll','msg','newtests']};document.querySelectorAll('.more-games .social-game').forEach(x=>{x.hidden=f!=='all'&&!(groups[f]||[]).includes(x.dataset.v||'newtests')});}
  if(b.hasAttribute('data-sticker-filter')){const f=b.dataset.stickerFilter;document.querySelectorAll('[data-sticker-filter]').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('[data-sticker]').forEach(x=>{x.hidden=f!=='all'&&f!=='reactions'&&x.dataset.sticker!==f});}
- if(b.hasAttribute('data-sticker')){const i=+b.dataset.sticker;const [t,d]=SOCIAL_STICKERS[i];document.querySelector('#ovl').innerHTML=`<div class="ov" role="dialog" aria-modal="true" aria-label="${t}"><div class="ovbg" data-sticker-close></div><div class="card sticker-view"><h2>${d}</h2>${socialImg(i,t)}<p class="small">${t}</p><a class="btn gold" href="./art/sticker-${i}.webp" download="baynna-sticker-${i}.webp">تنزيل الستيكر ↓</a><button class="btn soft" data-sticker-close>إغلاق</button></div></div>`;document.querySelector('[data-sticker-close].btn')?.focus();}
+ if(b.hasAttribute('data-sticker')){const i=+b.dataset.sticker;const [t,d]=SOCIAL_STICKERS[i];document.querySelector('#ovl').innerHTML=`<div class="ov" role="dialog" aria-modal="true" aria-label="${t}"><div class="ovbg" data-sticker-close></div><div class="card sticker-view"><h2>${d}</h2>${socialImg(i,t)}<p class="small">${t}</p><a class="btn gold" href="art/sticker-${i}.webp" download="baynna-sticker-${i}.webp">تنزيل الستيكر ↓</a><button class="btn soft" data-sticker-close>إغلاق</button></div></div>`;document.querySelector('[data-sticker-close].btn')?.focus();}
  if(b.hasAttribute('data-sticker-close'))document.querySelector('#ovl').innerHTML='';
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.sticker-view'))document.querySelector('#ovl').innerHTML=''});
@@ -2507,3 +2598,5 @@ window.closeNewTests=function(){try{var d=frame.contentDocument,m=d&&d.getElemen
 
 </body>
 </html>
+
+<script src="baynna-lobby.js"></script>
