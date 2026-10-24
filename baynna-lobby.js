@@ -1,4 +1,5 @@
-/* Baynna lobby v3 — ساحة الانتظار داخل الغرفة فقط.
+/* Baynna lobby v4 — 12 منصة + شريط لاعبين + قوائم منبثقة للرقص/الشخصية/وضع اللعب
+   Baynna lobby v3 — ساحة الانتظار داخل الغرفة فقط.
    - لا يوجد أي تحكم بحركة الشخصيات: كلها تقف في صف وتتحرك لوحدها حسب شخصيتها.
    - الكانفس لا يستقبل أي لمس (pointer-events:none) فلا يتعارض أبدًا مع تمرير الصفحة.
    - الرقصات والميمز محسوبة محليًا من الوقت العام (Date.now) + معرّف اللاعب، فتظهر متزامنة عند الجميع
@@ -65,11 +66,20 @@
 
   /* ---------- ردّات الفعل (تُزامَن عبر الشبكة كمعرّف صغير فقط) ---------- */
   /* [key, emoji, label, sticker index|null|-1 عشوائي, motion] */
-  var EMOTES = [['wave', '👋', 'تحية', null, 'sway'], ['laugh', '😂', 'ضحك', 0, 'shake'], ['dance', '💃', 'رقصة', 5, 'dance'],
-                ['win', '🏆', 'احتفال', 3, 'hop2'], ['shock', '😱', 'صدمة', 1, 'jitter'], ['love', '😍', 'حب', 2, 'sway'],
-                ['cry', '😭', 'بكاء', 4, 'droop'], ['meme', '🎲', 'ميم!', -1, 'dance']];
+  var EMOTES = [['wave', '👋', 'تحية', null, 'sway'], ['laugh', '😂', 'ضحك', 0, 'shake'], ['win', '🏆', 'احتفال', 3, 'hop2'],
+                ['shock', '😱', 'صدمة', 1, 'jitter'], ['love', '😍', 'حب', 2, 'sway'], ['cry', '😭', 'بكاء', 4, 'droop'],
+                ['meme', '🎲', 'ميم!', -1, 'dance'], ['dance', '💃', 'رقصتي', 5, 'dance']];
+  /* رقصات كاملة (تُزامَن بنفس الطريقة: معرّف صغير فقط) */
+  var DANCES = [['d_shake', '💥', 'هزّة', 'shake'], ['d_hop', '🦘', 'نطنطة', 'hop2'], ['d_spin', '🌀', 'لفّة', 'spin'], ['d_slide', '🕺', 'زحلقة', 'slide'],
+                ['d_twist', '🌪️', 'تويست', 'twist'], ['d_robot', '🤖', 'روبوت', 'robot'], ['d_flip', '🔁', 'قلبة', 'flip'], ['d_sway', '🌊', 'تمايل', 'sway']];
+  DANCES.forEach(function (d) { EMOTES.push([d[0], d[1], d[2], null, d[3], 1]); });
   var EMAP = {}; EMOTES.forEach(function (e) { EMAP[e[0]] = e; });
-  var EMO_MS = 3200;
+  function emoDur(k) { return EMAP[k] && EMAP[k][5] ? 6400 : 3200; }
+  /* كل لعبة لها ماب (عالم + خلفية) يتحدد تلقائيًا لما المضيف يختارها */
+  var GAME_MAP = { wyr: { id: 'cozy', back: 0 }, who: { id: 'meme', back: 0 }, rdraw: { id: 'kawaii', back: 0 }, rtruth: { id: 'anime', back: 1 },
+                   mafia: { id: 'fantasy', back: 0 }, rtaboo: { id: 'street', back: 0 }, rstn: { id: 'cyber', back: 0 } };
+  var SLOTS = 12;
+  var EMO_MS = 6400;
 
   /* ---------- ميمز: جمل قصيرة (عامة + خاصة بكل عالم) وستكرز من أصول المشروع ---------- */
   var PHRASES = ['يا لطيف شو هاد 😂', 'أنا جاهز... مش جاهز', 'وين الأكل يا جماعة؟ 🍕', 'مين فتح المايك؟', 'أنا بريء والله 😇',
@@ -144,97 +154,136 @@
       if (isMe) { if (!p.lb && lastSent) { lastSent = ''; queueSend(); } }
       else if (lb.e && lb.t !== c.lastT) { c.e = lb.e; c.et = performance.now(); c.tw = lb.t; }
       c.lastT = lb.t;
-      arr.push({ uid: p.uid, name: p.name, me: isMe, host: p.uid === net.owner, b: isMe ? st.b : lb.b });
+      arr.push({ uid: p.uid, name: p.name, me: isMe, host: p.uid === net.owner, b: isMe ? st.b : lb.b, talk: !!p.speaking, voice: !!p.voice, avh: p.avh || '' });
     });
     Object.keys(crowd).forEach(function (u) { if (!seen[u]) delete crowd[u]; });
     arr.sort(function (a, b) { return a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0; });
     list = arr;
   }
 
-  /* ---------- واجهة ---------- */
-  var arena = null, raf = 0, visible = true, statusEl = null, io = null, ro = null;
+  /* ---------- واجهة: شريط لاعبين + ساحة 12 منصة + شريط أدوات صغير وقوائم منبثقة ---------- */
+  var arena = null, raf = 0, visible = true, statusEl = null, io = null, ro = null, sheet = '';
   function setStatus(t) { if (statusEl) { statusEl.textContent = t; statusEl.hidden = !t; } }
 
-  function worldCards(sel, attr) {
-    return WKEYS.map(function (k) {
-      var W = WORLDS[k], b = W.backs[0];
-      return '<button type="button" class="lb-wcard' + (sel === k ? ' on' : '') + '" ' + attr + '="' + k + '" aria-pressed="' + (sel === k) + '" style="--w1:' + b.sky[0] + ';--w2:' + b.sky[1] + ';--wa:' + W.accent + '"><span class="lb-wi">' + W.icon + '</span><b>' + W.name + '</b><small>' + W.desc + '</small></button>';
-    }).join('');
-  }
-  function hostPanel() {
-    if (!net || !net.host) return net ? '<div class="lb-card"><b>عالم الغرفة</b><p class="lb-mut">المضيف هو اللي بيختار العالم. أي تغيير بيوصلك تلقائيًا.</p></div>' : '';
-    var w = curWorld(), W = WORLDS[w.id];
-    return '<details class="lb-card lb-host"' + (previewWorld ? ' open' : '') + '><summary><b>👑 عالم الغرفة (للمضيف) — ' + W.icon + ' ' + W.name + '</b></summary>' +
-      '<div class="lb-wgrid">' + worldCards(w.id, 'data-hw') + '</div>' +
-      '<b>خلفية الساحة</b><div class="lb-row">' + W.backs.map(function (b, i) { return '<button type="button" class="lb-chip' + (w.back === i ? ' on' : '') + '" data-hb="' + i + '">' + b.n + '</button>'; }).join('') + '</div>' +
-      '<label class="lb-check"><input type="checkbox" data-hu' + (w.uniform ? ' checked' : '') + '> نفس الشخصية للجميع</label>' +
-      '<div class="lb-row">' + (previewWorld ? '<span class="lb-tag">معاينة — لم تُعتمد بعد</span><button type="button" class="lb-btn" data-happly>✓ اعتماد للجميع</button><button type="button" class="lb-chip" data-hcancel>إلغاء</button>' : '<span class="lb-mut">اختر لتعاين، ثم اعتمد.</span>') + '</div></details>';
-  }
-  function panelHTML() {
-    var w = curWorld(), W = WORLDS[w.id];
-    var picker = '<div class="lb-card"><b>🎭 اختر شخصيتك</b>' + (w.uniform ? '<p class="lb-tag">المضيف فرض شخصية موحّدة — اختيارك محفوظ ويرجع لما يلغيها</p>' : '') +
-      '<div class="lb-chars">' + W.chars.map(function (c, i) {
-        return '<button type="button" class="lb-char' + (st.b === i ? ' on' : '') + '" data-c="' + i + '" aria-pressed="' + (st.b === i) + '" aria-label="' + esc(c.n) + '"><img src="art/lobby/' + w.id + '-' + i + '.webp" alt="" loading="lazy" decoding="async"><span>' + esc(c.n) + '</span><small>' + HOW[c.mv] + '</small></button>';
-      }).join('') + '</div></div>';
-    var worldBlock = net ? hostPanel() : '<div class="lb-card"><b>جرّب عالمًا</b><div class="lb-wgrid">' + worldCards(st.world, 'data-w') + '</div></div>';
-    return picker + worldBlock + '<label class="lb-check"><input type="checkbox" data-lite' + (st.lite ? ' checked' : '') + '> وضع مخفف (بدون مؤثرات، أوفر للبطارية)</label>';
-  }
-  function portalsHTML() {
-    return '<div class="lb-portals"><button type="button" data-goto="pick">🎮 اختيار اللعبة</button><button type="button" data-goto="invite">📨 دعوة الأصدقاء</button></div>';
-  }
-
   function build() {
-    var root = document.createElement('section'); root.className = 'lb-section'; root.setAttribute('aria-label', 'ساحة الغرفة');
-    root.innerHTML = '<div class="lb-head"><div><h2><span class="lb-spark">✦</span> ساحة الغرفة</h2><p class="lb-mut lb-sub"></p><span class="lb-world-tag"></span></div><span class="lb-live"></span></div>' +
-      '<div class="lb-wrap"><div class="lb-main"><div class="lb-stage"><canvas role="img" aria-label="الشخصيات واقفة جنب بعض وتتحرك وترقص لوحدها"></canvas>' +
-      '<span class="lb-status" hidden></span></div>' +
-      '<div class="lb-emotes" role="group" aria-label="ردّات فعل">' + EMOTES.map(function (e) { return '<button type="button" data-e="' + e[0] + '" aria-label="' + e[2] + '"><span>' + e[1] + '</span><small>' + e[2] + '</small></button>'; }).join('') + '</div>' +
-      '<div class="lb-pslot"></div></div><aside class="lb-panel"></aside></div>';
+    var root = document.createElement('section'); root.className = 'lb-section lb2'; root.setAttribute('aria-label', 'ساحة الغرفة');
+    root.innerHTML =
+      '<div class="lb2-head"><div class="lb2-title"><b>✦ الساحة</b><span class="lb-world-tag"></span></div><span class="lb-live"></span></div>' +
+      '<div class="lb2-strip" role="list" aria-label="اللاعبين"></div>' +
+      '<div class="lb-stage lb2-stage"><canvas role="img" aria-label="ساحة فيها 12 منصة، كل لاعب واقف على منصته"></canvas><span class="lb-status" hidden></span></div>' +
+      '<div class="lb2-dock">' +
+        '<button type="button" class="lb2-dk" data-sheet="dance"><span>💃</span><b>الرقصات</b></button>' +
+        '<button type="button" class="lb2-dk" data-sheet="char"><span class="lb2-dk-img"></span><b>شخصيتي</b></button>' +
+        '<button type="button" class="lb2-dk" data-sheet="look"><span>🎨</span><b>المظهر</b></button>' +
+        '<button type="button" class="lb2-dk lb2-dk-main lb2-dk-play" data-sheet="game"><span class="lb2-dk-gi">🎮</span><b class="lb2-dk-gn">وضع اللعب</b></button>' +
+      '</div>' +
+      '<div class="lb2-sheet" hidden><div class="lb2-back" data-close></div><div class="lb2-panel" role="dialog" aria-modal="true"><div class="lb2-grab"></div><div class="lb2-sh-head"><b class="lb2-sh-t"></b><button type="button" class="lb2-x" data-close aria-label="إغلاق">✕</button></div><div class="lb2-sh-body"></div></div></div>';
     statusEl = root.querySelector('.lb-status');
     root.addEventListener('click', onClick);
     root.addEventListener('change', onChange);
     return root;
   }
 
+  function gameList() { return (net && net.games) || []; }
+  function curGame() { var g = gameList(), k = net && net.sel; for (var i = 0; i < g.length; i++) if (g[i].k === k) return g[i]; return null; }
+
+  function sheetHTML(kind) {
+    var w = curWorld(), W = WORLDS[w.id];
+    if (kind === 'dance') {
+      return '<p class="lb2-sec">رقصات</p><div class="lb2-grid">' + DANCES.map(function (d) { return '<button type="button" class="lb2-tile" data-e="' + d[0] + '"><span>' + d[1] + '</span><b>' + d[2] + '</b></button>'; }).join('') + '</div>' +
+        '<p class="lb2-sec">ردّات فعل</p><div class="lb2-grid">' + EMOTES.filter(function (e) { return !e[5]; }).map(function (e) { return '<button type="button" class="lb2-tile sm" data-e="' + e[0] + '"><span>' + e[1] + '</span><b>' + e[2] + '</b></button>'; }).join('') + '</div>';
+    }
+    if (kind === 'char') {
+      return (w.uniform ? '<p class="lb-tag">المضيف فرض شخصية موحّدة — اختيارك محفوظ ويرجع لما يلغيها</p>' : '') +
+        '<p class="lb2-sec">' + W.icon + ' شخصيات ' + W.name + '</p><div class="lb2-chars">' + W.chars.map(function (c, i) {
+          return '<button type="button" class="lb2-char' + (st.b === i ? ' on' : '') + '" data-c="' + i + '" aria-pressed="' + (st.b === i) + '"><img src="art/lobby/' + w.id + '-' + i + '.webp" alt="" loading="lazy" decoding="async"><b>' + esc(c.n) + '</b><small>' + HOW[c.mv] + '</small></button>';
+        }).join('') + '</div><p class="lb-mut">الشخصيات بتتغير حسب ماب اللعبة.</p>';
+    }
+    if (kind === 'game') {
+      var host = net && net.host, sel = net && net.sel;
+      return (host ? '<p class="lb-mut">اختار اللعبة — الماب بيتحدد تلقائيًا للكل.</p>' : '<p class="lb-mut">المضيف هو اللي بيختار اللعبة، وبتوصلك فورًا.</p>') +
+        '<div class="lb2-games">' + gameList().map(function (g) {
+          var m = GAME_MAP[g.k] || { id: 'meme', back: 0 }, MW = WORLDS[m.id], bk = MW.backs[m.back];
+          return '<button type="button" class="lb2-game' + (sel === g.k ? ' on' : '') + '"' + (host ? ' data-a="rgamepick" data-v="' + esc(g.k) + '" data-gk="' + esc(g.k) + '"' : ' disabled') +
+            ' style="--w1:' + bk.sky[0] + ';--w2:' + bk.sky[1] + ';--wa:' + MW.accent + ';--bgi:url(art/lobby/bg-' + m.id + '.webp)">' +
+            '<span class="lb2-gi">' + esc(g.i) + '</span><span class="lb2-gt"><b>' + esc(g.n) + '</b><small>' + esc(g.d) + '</small><em>🗺️ ' + MW.icon + ' ' + esc(bk.n) + '</em></span>' + (sel === g.k ? '<i class="lb2-ok">✓</i>' : '') + '</button>';
+        }).join('') + '</div>';
+    }
+    if (kind === 'look') {
+      var out = '';
+      if (net && net.host) {
+        out += '<p class="lb2-sec">عالم الساحة</p><div class="lb-wgrid">' + WKEYS.map(function (k) { var X = WORLDS[k], b = X.backs[0];
+          return '<button type="button" class="lb-wcard' + (w.id === k ? ' on' : '') + '" data-hw="' + k + '" style="--w1:' + b.sky[0] + ';--w2:' + b.sky[1] + ';--wa:' + X.accent + '"><span class="lb-wi">' + X.icon + '</span><b>' + X.name + '</b><small>' + X.desc + '</small></button>'; }).join('') + '</div>' +
+          '<p class="lb2-sec">الخلفية</p><div class="lb-row">' + W.backs.map(function (b, i) { return '<button type="button" class="lb-chip' + (w.back === i ? ' on' : '') + '" data-hb="' + i + '">' + b.n + '</button>'; }).join('') + '</div>' +
+          '<label class="lb-check"><input type="checkbox" data-hu' + (w.uniform ? ' checked' : '') + '> نفس الشخصية للجميع</label>';
+      } else out += '<p class="lb-mut">المضيف بيختار عالم الساحة وخلفيتها. حاليًا: ' + W.icon + ' ' + W.name + ' · ' + W.backs[w.back].n + '</p>';
+      return out + '<label class="lb-check"><input type="checkbox" data-lite' + (st.lite ? ' checked' : '') + '> وضع مخفف (أوفر للبطارية)</label>';
+    }
+    return '';
+  }
+  var TITLES = { dance: '💃 الرقصات', char: '🎭 اختار شخصيتك', game: '🎮 وضع اللعب', look: '🎨 المظهر' };
+  function openSheet(kind) {
+    sheet = kind; var sh = arena.querySelector('.lb2-sheet');
+    sh.querySelector('.lb2-sh-t').textContent = TITLES[kind];
+    sh.querySelector('.lb2-sh-body').innerHTML = sheetHTML(kind);
+    sh.hidden = false; requestAnimationFrame(function () { sh.classList.add('open'); });
+  }
+  function closeSheet() {
+    if (!arena) return; var sh = arena.querySelector('.lb2-sheet'); sheet = ''; sh.classList.remove('open');
+    setTimeout(function () { if (!sheet) sh.hidden = true; }, 220);
+  }
+  function rerenderSheet() { if (sheet && arena) arena.querySelector('.lb2-sh-body').innerHTML = sheetHTML(sheet); }
+
   function onClick(e) {
+    if (e.target.closest('[data-close]')) { closeSheet(); return; }
     var b = e.target.closest('button'); if (!b) return; var d = b.dataset;
-    if (d.e) { /* ردّة فعل: ليست تحكمًا بالحركة، فقط تحية/ميم فوق الشخصية */
+    if (d.sheet) { openSheet(d.sheet); return; }
+    if (d.e) {
       var now = Date.now(); if (now - me.last < 700) return; me.last = now;
-      me.e = d.e; me.et = performance.now(); me.etw = now; queueSend(); return;
+      me.e = d.e; me.et = performance.now(); me.etw = now; queueSend(); closeSheet(); return;
     }
-    if (d.c != null) { st.b = int(d.c, 4); save(); queueSend(); refreshPanel(true); return; }
-    if (d.w) { st.world = d.w; st.back = 0; save(); refreshPanel(true); return; }
-    if (d.hw) { previewWorld = Object.assign({}, curWorld(), { id: d.hw, back: 0 }); refreshPanel(true); return; }
-    if (d.hb) { previewWorld = Object.assign({}, curWorld(), { back: +d.hb }); refreshPanel(true); return; }
-    if ('hcancel' in d) { previewWorld = null; refreshPanel(true); return; }
-    if ('happly' in d) {
-      var w = previewWorld; b.disabled = true;
-      window.BaynnaNet.setWorld({ id: w.id, back: w.back, uniform: !!w.uniform }).then(function (ok) {
-        if (ok) { previewWorld = null; setStatus(''); } else setStatus('تعذّر حفظ العالم — تأكد من الاتصال');
-        refreshPanel(true);
-      });
-      return;
+    if (d.c != null) { st.b = int(d.c, 4); save(); queueSend(); rerenderSheet(); refreshPanel(true); setTimeout(closeSheet, 250); return; }
+    if (d.gk) { /* rgamepick يشتغل من المعالج العام؛ هون بس نحدد الماب */
+      var m = GAME_MAP[d.gk]; if (m && net && net.host && window.BaynnaNet) { var cw = curWorld(); window.BaynnaNet.setWorld({ id: m.id, back: m.back, uniform: !!cw.uniform }); }
+      setTimeout(closeSheet, 200); return;
     }
-    if (d.goto) { var el = d.goto === 'pick' ? document.querySelector('[data-a="rgamepick"]') : document.getElementById('rcode'); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); return; }
+    if (d.hw || d.hb != null && d.hb !== undefined) {
+      if (!net || !net.host) return; var cw2 = curWorld(), nw = d.hw ? { id: d.hw, back: 0, uniform: cw2.uniform } : { id: cw2.id, back: +d.hb, uniform: cw2.uniform };
+      window.BaynnaNet.setWorld(nw).then(function (ok) { if (!ok) setStatus('تعذّر حفظ العالم — تأكد من الاتصال'); });
+      previewWorld = nw; rerenderSheet(); refreshPanel(true); setTimeout(function () { previewWorld = null; }, 1500); return;
+    }
   }
   function onChange(e) {
     var t = e.target;
     if (t.hasAttribute('data-lite')) { st.lite = t.checked; save(); return; }
-    if (t.hasAttribute('data-hu')) { previewWorld = Object.assign({}, curWorld(), { uniform: t.checked }); refreshPanel(true); }
+    if (t.hasAttribute('data-hu') && net && net.host) { var cw = curWorld(); window.BaynnaNet.setWorld({ id: cw.id, back: cw.back, uniform: t.checked }); }
   }
-  var panelSig = '';
+
+  function stripHTML() {
+    var h = list.map(function (a) {
+      var cls = 'lb2-p' + (a.talk ? ' talk' : '') + (a.voice ? ' vc' : '') + (a.me ? ' me' : '');
+      var mic = a.talk ? '🔊' : a.voice ? '🎙️' : '🔇';
+      var kick = net && net.host && !a.me ? '<button type="button" class="lb2-kick" data-a="rkick" data-v="' + esc(a.uid) + '" aria-label="إخراج ' + esc(a.name) + '">✕</button>' : '';
+      return '<div class="' + cls + '" role="listitem"><span class="lb2-av">' + (a.avh || '<span class="av">' + esc(String(a.name || '؟').slice(0, 1)) + '</span>') + '<i class="lb2-mic">' + mic + '</i>' + (a.host ? '<i class="lb2-crown">👑</i>' : '') + '</span><b>' + esc(String(a.name || '').slice(0, 10)) + '</b>' + kick + '</div>';
+    }).join('');
+    for (var i = list.length; i < SLOTS && i < list.length + 2; i++) h += '<div class="lb2-p empty"><span class="lb2-av"><span class="av">+</span></span><b>فاضي</b></div>';
+    return h;
+  }
+  var panelSig = '', stripSig = '';
   function refreshPanel(force) {
     if (!arena) return;
-    var w = curWorld(), sig = JSON.stringify([!!net, net && net.host, w, previewWorld, st.b, st.world, st.back, st.lite, list.length]);
+    var w = curWorld(), W = WORLDS[w.id], g = curGame();
+    var ss = JSON.stringify([net && net.host, list.map(function (a) { return [a.uid, a.name, a.talk, a.voice, a.host, a.avh.length]; })]);
+    if (ss !== stripSig) { stripSig = ss; arena.querySelector('.lb2-strip').innerHTML = stripHTML(); }
+    var sig = JSON.stringify([!!net, net && net.host, net && net.sel, w, st.b, st.lite, list.length, gameList().length]);
     if (!force && sig === panelSig) return; panelSig = sig;
-    var p = arena.querySelector('.lb-panel'), open = p.querySelector('details.lb-host'), wasOpen = open ? open.open : null;
-    p.innerHTML = panelHTML();
-    if (wasOpen != null) { var d2 = p.querySelector('details.lb-host'); if (d2) d2.open = wasOpen; }
-    arena.querySelector('.lb-pslot').innerHTML = net ? portalsHTML() : '';
-    arena.querySelector('.lb-sub').textContent = net ? 'الشخصيات تتحرك وترقص لوحدها — اضغط ردّة فعل تحت الساحة 👇' : 'جاري تحميل الغرفة…';
-    var lv = arena.querySelector('.lb-live'); lv.textContent = net ? '● ' + list.length + ' في الغرفة' : 'معاينة'; lv.classList.toggle('on', !!net);
-    arena.style.setProperty('--wa', WORLDS[w.id].accent);
-    arena.querySelector('.lb-world-tag').textContent = WORLDS[w.id].icon + ' ' + WORLDS[w.id].name + ' · ' + WORLDS[w.id].backs[w.back].n;
+    var lv = arena.querySelector('.lb-live'); lv.textContent = net ? '● ' + list.length + '/' + SLOTS : 'معاينة'; lv.classList.toggle('on', !!net);
+    arena.style.setProperty('--wa', W.accent);
+    arena.querySelector('.lb-world-tag').textContent = W.icon + ' ' + W.backs[w.back].n;
+    var bi = skinB(st.b, w); arena.querySelector('.lb2-dk-img').innerHTML = '<img src="art/lobby/' + w.id + '-' + bi + '.webp" alt="">';
+    arena.querySelector('.lb2-dk-gi').textContent = g ? g.i : '🎮';
+    arena.querySelector('.lb2-dk-gn').textContent = g ? g.n : (net && net.host ? 'اختار لعبة' : 'وضع اللعب');
+    if (sheet && sheet !== 'dance') rerenderSheet();
     preload(w.id);
   }
 
@@ -315,14 +364,42 @@
     ctx.drawImage(bgc, 0, 0, W, H);
   }
 
-  function layout(W, H) { /* صف واحد (حتى 6) أو صفّين، واقفين جنب بعض */
-    var n = list.length, rows = n > 3 && W * .92 / n < 68 ? 2 : 1, per = rows === 2 ? Math.ceil(n / 2) : n, i = 0, r;
-    for (r = 0; r < rows; r++) {
-      var cnt = r === 0 ? per : n - per, rs = rows === 2 ? (r === 0 ? .86 : 1) : 1, fy = rows === 2 ? (r === 0 ? .67 : .88) : .85;
-      if (cnt < 1) continue;
-      var h0 = (rows === 2 ? Math.min(H * .36, 125) : Math.min(H * .46, 150)) * rs, sw = Math.min(W * .92 / cnt, h0 * .92), h = Math.min(h0, sw * 1.7), x0 = W / 2 - sw * cnt / 2;
-      for (var k = 0; k < cnt; k++, i++) { var o = list[i]; o.tx = x0 + sw * (k + .5); o.ty = H * fy; o.h = Math.max(54, h); o.sw = sw; o.row = r; }
+  var PODS = [];
+  function layout(W, H) {
+    PODS.length = 0;
+    for (var r = 0; r < 2; r++) {
+      var fy = r === 0 ? .55 : .88, sc = r === 0 ? .82 : 1, span = r === 0 ? .80 : .94, sw = W * span / 6;
+      for (var k = 0; k < 6; k++) {
+        var off = r === 0 ? 0 : 0; PODS.push({ x: W / 2 - W * span / 2 + sw * (k + .5) + off, y: H * fy, sw: sw, sc: sc, row: r });
+      }
     }
+    /* أول 6 بالصف الأمامي (الأوضح) ثم الخلفي */
+    var order = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+    for (var i = 0; i < list.length && i < SLOTS; i++) {
+      var o = list[i], pd = PODS[order[i]]; pd.who = o;
+      o.tx = pd.x; o.ty = pd.y - pd.sw * .1; o.sw = pd.sw; o.row = pd.row; o.h = Math.max(46, Math.min(H * .34, pd.sw * 1.55) * pd.sc);
+    }
+  }
+  function drawPodiums(ctx, now, acc) {
+    PODS.forEach(function (pd) {
+      var rx = pd.sw * .42, ry = rx * .32, x = pd.x, y = pd.y, a = pd.who, th = ry * .9;
+      ctx.save();
+      /* جسم المنصة */
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, y + th + 3, rx * 1.05, ry * 1.05, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = a ? 'rgba(20,20,32,.85)' : 'rgba(20,20,32,.45)'; ctx.fillRect(x - rx, y, rx * 2, th);
+      ctx.beginPath(); ctx.ellipse(x, y + th, rx, ry, 0, 0, Math.PI); ctx.fill();
+      var g = ctx.createLinearGradient(x - rx, 0, x + rx, 0);
+      g.addColorStop(0, a ? acc + 'cc' : 'rgba(255,255,255,.18)'); g.addColorStop(.5, a ? '#ffffffcc' : 'rgba(255,255,255,.32)'); g.addColorStop(1, a ? acc + 'cc' : 'rgba(255,255,255,.18)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = a ? acc : 'rgba(255,255,255,.35)'; if (!a) ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+      if (a && a.talk) { /* موجات صوت */
+        for (var q = 0; q < 2; q++) { var ph = ((now / 900) + q * .5) % 1; ctx.globalAlpha = 1 - ph; ctx.strokeStyle = '#3dff8a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, rx * (1 + ph * .6), ry * (1 + ph * .6), 0, 0, 7); ctx.stroke(); }
+        ctx.globalAlpha = 1;
+      }
+      if (a && a.me) { ctx.strokeStyle = acc; ctx.lineWidth = 3; ctx.shadowColor = acc; ctx.shadowBlur = 12; ctx.beginPath(); ctx.ellipse(x, y, rx * .85, ry * .8, 0, 0, 7); ctx.stroke(); ctx.shadowBlur = 0; }
+      if (!a) { ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font = '700 ' + Math.round(rx * .55) + 'px Cairo,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', x, y + 1); }
+      ctx.restore();
+    });
   }
 
   var late = []; /* طبقة عليا: الأسماء والستكرز والفقاعات تُرسم بعد كل الشخصيات فلا يغطيها أحد */
@@ -334,8 +411,8 @@
 
     /* ما الذي يفعله الآن؟ ردّة فعل > رقصة جماعية > رقصة فردية > طبعه الخاص */
     var em = '', emAge = 0, emote = 0;
-    if (a.me) { if (me.e && pn - me.et < EMO_MS) { em = me.e; emAge = pn - me.et; emote = me.etw; } }
-    else if (c.e && pn - c.et < EMO_MS) { em = c.e; emAge = pn - c.et; emote = c.tw; }
+    if (a.me) { if (me.e && pn - me.et < emoDur(me.e)) { em = me.e; emAge = pn - me.et; emote = me.etw; } }
+    else if (c.e && pn - c.et < emoDur(c.e)) { em = c.e; emAge = pn - c.et; emote = c.tw; }
     var cyc = now % GROUP_PERIOD, group = !lite && cyc > GROUP_PERIOD - GROUP_LEN, b = (now % BEAT) / BEAT, bc = Math.floor(now / BEAT);
     var off = c.hu % DANCE_PERIOD, kk = Math.floor((now + off) / DANCE_PERIOD), loc = (now + off) % DANCE_PERIOD;
     var solo = !lite && loc < DANCE_LEN && hash(a.uid + kk) % 3 !== 0;
@@ -352,20 +429,19 @@
     var x = c.x + P.dx * k, fy = c.y, lift = P.dy * k, sw0 = spr ? h * spr.naturalWidth / spr.naturalHeight : h * .6;
     /* ظل + حلقة اللاعب نفسه */
     ctx.fillStyle = 'rgba(0,0,0,' + (.32 - Math.min(.16, lift / 160)) + ')'; ctx.beginPath(); ctx.ellipse(x, fy + 2, Math.max(4, sw0 * .38 * (1 - lift / 220)), h * .06, 0, 0, 7); ctx.fill();
-    if (a.me) { ctx.strokeStyle = acc; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(c.x, fy + 2, sw0 * .46, h * .085, 0, 0, 7); ctx.stroke(); }
     ctx.save(); ctx.translate(x, fy - lift); ctx.rotate(P.rot); ctx.scale(P.sx * P.fl * bs, P.sy * bs);
     if (spr) ctx.drawImage(spr, -sw0 / 2, -h, sw0, h);
     else { ctx.fillStyle = acc; ctx.globalAlpha = .75; ctx.beginPath(); ctx.ellipse(0, -h / 2, h * .26, h / 2, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.font = (h * .3) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(wd.icon, 0, -h / 2); }
     ctx.restore();
 
-    var top = fy - lift - h * P.sy - 6, label = (a.host ? '👑 ' : '') + (a.me ? '★ ' : '') + String(a.name || '').slice(0, 14);
-    late.push(function () { pill(ctx, label, c.x, fy + 15, a.me ? '#101010' : '#fff', a.me ? acc : 'rgba(10,10,16,.66)'); });
+    var top = fy - lift - h * P.sy - 6, label = (a.talk ? '🔊 ' : '') + (a.host ? '👑 ' : '') + String(a.name || '').slice(0, 10);
+    late.push(function () { pill(ctx, label, c.x, fy + a.sw * .22 + 12, a.talk ? '#06210f' : a.me ? '#101010' : '#fff', a.talk ? '#3dff8a' : a.me ? acc : 'rgba(10,10,16,.72)'); });
 
     /* ردّة فعل: ستكر (أو إيموجي) فوق الرأس، وفي "ميم!" جملة أيضًا؛ وإلا ميم عشوائي متزامن */
     var bub = '', bubAge = 0, bubDur = SAY_LEN;
     if (em) {
       var e = EMAP[em], si = e[3], src = si === -1 ? STICKERS[emote % STICKERS.length] : si != null ? STICKERS[si] : null, sI = src && img(src), pop = 1 + S(emAge / 150) * .08;
-      if (em === 'meme') { bub = PHRASES[emote % PHRASES.length]; bubAge = emAge; bubDur = EMO_MS; }
+      if (em === 'meme') { bub = PHRASES[emote % PHRASES.length]; bubAge = emAge; bubDur = 3200; }
       late.push(function () {
         ctx.save(); ctx.translate(c.x + sw0 * .34, top + 4); ctx.scale(pop, pop);
         if (sI) ctx.drawImage(sI, -24, -24, 48, 48); else { ctx.font = '30px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(e[1], 0, 0); }
@@ -430,8 +506,9 @@
     }
 
     layout(W, H);
+    drawPodiums(ctx, now, wd.accent);
     late.length = 0;
-    list.slice().sort(function (a, b) { return a.row - b.row || a.tx - b.tx; }).forEach(function (a) { drawSprite(ctx, a, now, t, W, lite, w, wd.accent); });
+    list.slice(0, SLOTS).sort(function (a, b) { return a.row - b.row || a.tx - b.tx; }).forEach(function (a) { drawSprite(ctx, a, now, t, W, lite, w, wd.accent); });
     late.forEach(function (f) { f(); });
   }
   function startLoop() {
@@ -447,7 +524,7 @@
     if (window.IntersectionObserver) { io = new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0 }); io.observe(stage); }
     cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
   }
-  function stopLoop() { cancelAnimationFrame(raf); raf = 0; if (ro) ro.disconnect(); if (io) io.disconnect(); ro = io = null; arena = null; statusEl = null; panelSig = ''; }
+  function stopLoop() { cancelAnimationFrame(raf); raf = 0; if (ro) ro.disconnect(); if (io) io.disconnect(); ro = io = null; arena = null; statusEl = null; panelSig = ''; stripSig = ''; sheet = ''; }
 
   /* ---------- التركيب: داخل شاشة انتظار الغرفة فقط ---------- */
   var warned = 0;
