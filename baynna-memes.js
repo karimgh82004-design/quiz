@@ -25,7 +25,24 @@
     return pool[0].m;
   }
   function remember(id) { recent.push(id); if (recent.length > 10) recent.shift(); }
-  function img(m, cls) { return '<img class="' + cls + '" src="' + BASE + m.f + '" alt="' + esc(m.t || 'ميم') + '" loading="lazy" decoding="async">'; }
+  function img(m, cls, eager) {
+    return '<img class="' + cls + '" src="' + BASE + m.f + '" alt="' + esc(m.t || 'ميم') + '"' + (eager ? '' : ' loading="lazy"') + ' decoding="async"' +
+      (cls === 'bmchat' ? ' onload="this.classList.add(\'ld\')" onerror="this.classList.add(\'er\')"' : '') + '>';
+  }
+  /* تسخين الكاش: نحمّل الميمز بالخلفية (4 طلبات معًا، بدون الاحتفاظ بالصور بالذاكرة) فتفتح المكتبة جاهزة */
+  var warmed = 0;
+  function preload() {
+    if (warmed) return; warmed = 1;
+    var i = 0, busy = 0;
+    function next() {
+      while (busy < 4 && i < D.length) {
+        busy++; var im = new Image(), done = function () { this.onload = this.onerror = null; busy--; next(); };
+        im.decoding = 'async'; im.onload = im.onerror = done; im.src = BASE + D[i++].f;
+      }
+    }
+    var go = window.requestIdleCallback ? function () { requestIdleCallback(next, { timeout: 1500 }); } : function () { setTimeout(next, 300); };
+    go();
+  }
   function pop(m, label) {
     var old = document.getElementById('bmpop'); if (old) old.remove();
     var d = document.createElement('div'); d.id = 'bmpop'; d.className = 'bmpop'; d.setAttribute('role', 'status');
@@ -48,14 +65,25 @@
   function picker() {
     var old = document.getElementById('bmpk'); if (old) { old.remove(); return; }
     var d = document.createElement('div'); d.id = 'bmpk'; d.className = 'bmpk';
-    var cat = 'all', qq = '';
+    var cat = 'all', qq = ''; preload();
     function draw() {
       var list = D.filter(function (m) { return (cat === 'all' || m.c.indexOf(cat) >= 0) && (!qq || m.t.indexOf(qq) >= 0 || m.c.some(function (c) { return CATS[c].indexOf(qq) >= 0; })); });
-      d.querySelector('.bmg').innerHTML = list.length ? list.map(function (m) { return '<button data-id="' + m.id + '" aria-label="' + esc(m.t || 'ميم') + '">' + img(m, '') + '</button>'; }).join('') : '<p>ما في ميمز بهالبحث</p>';
+      var g = d.querySelector('.bmg');
+      g.innerHTML = list.length ? list.map(function (m, i) { return '<button data-id="' + m.id + '" aria-label="' + esc(m.t || 'ميم') + '">' + img(m, '', i < 16) + '</button>'; }).join('') : '<p>ما في ميمز بهالبحث</p>';
+      var pend = 0, st = d.querySelector('.bmst');
+      function fin() { if (--pend <= 0) st.hidden = true; }
+      [].forEach.call(g.querySelectorAll('img:not([loading])'), function (im) {
+        if (im.complete && im.naturalWidth) { im.classList.add('ld'); return; }
+        pend++; im.addEventListener('load', function () { im.classList.add('ld'); fin(); }); im.addEventListener('error', function () { im.classList.add('er'); fin(); });
+      });
+      [].forEach.call(g.querySelectorAll('img[loading]'), function (im) {
+        if (im.complete && im.naturalWidth) im.classList.add('ld'); else { im.addEventListener('load', function () { im.classList.add('ld'); }); im.addEventListener('error', function () { im.classList.add('er'); }); }
+      });
+      st.hidden = pend <= 0;
       [].forEach.call(d.querySelectorAll('.bmc button'), function (b) { b.classList.toggle('on', b.dataset.c === cat); });
     }
     d.innerHTML = '<div class="bmh"><b>😂 مكتبة الميمز</b><label><input type="checkbox" ' + (auto ? 'checked' : '') + '> ميمز تلقائية</label><button class="x" aria-label="إغلاق">✕</button></div>' +
-      '<input class="bms" placeholder="ابحث… (مثلاً: صدمة، معلش)"><div class="bmc">' + Object.keys(CATS).map(function (c) { return '<button data-c="' + c + '">' + CATS[c] + '</button>'; }).join('') + '</div><div class="bmg"></div>';
+      '<input class="bms" placeholder="ابحث… (مثلاً: صدمة، معلش)"><div class="bmc">' + Object.keys(CATS).map(function (c) { return '<button data-c="' + c + '">' + CATS[c] + '</button>'; }).join('') + '</div><div class="bmst" role="status">⏳ جاري تحميل الميمز…</div><div class="bmg"></div>';
     document.body.appendChild(d);
     d.querySelector('.x').onclick = function () { d.remove(); };
     d.querySelector('input[type=checkbox]').onchange = function (e) { auto = e.target.checked; try { localStorage.setItem(KEY, auto ? '1' : '0'); } catch (er) {} };
@@ -65,5 +93,5 @@
     draw();
   }
   function close() { var o = document.getElementById('bmpk'); if (o) o.remove(); var p = document.getElementById('bmpop'); if (p) p.remove(); sender = null; }
-  window.BMEME = { onRoom: onRoom, render: render, picker: picker, setSender: function (f) { sender = f; }, close: close };
+  window.BMEME = { preload: preload, onRoom: onRoom, render: render, picker: picker, setSender: function (f) { sender = f; }, close: close };
 })();

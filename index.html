@@ -324,7 +324,7 @@ h1,h2,h3{text-wrap:balance}
 @keyframes pxf{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(0,-40px,0) rotate(20deg)}}
 
 /* glass header */
-.top{-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 10px 28px -22px rgba(16,30,59,.5)}
+.top{box-shadow:0 10px 28px -22px rgba(16,30,59,.5)}
 
 /* layered depth on surfaces */
 .card,.tile{box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 1px 2px rgba(16,30,59,.06),0 16px 32px -20px rgba(16,30,59,.42)}
@@ -1444,6 +1444,7 @@ const rnm=u=>(RM&&RM.names[u])||{n:"لاعب",av:""};
 const rleft=r=>Math.max(0,Math.ceil(((r.rt||0)+(r.tm||0)*1000-(Date.now()+RM.off))/1000));
 let rrq=0;
 const rrender=()=>{if(rrq)return;rrq=requestAnimationFrame(()=>{rrq=0;if(S.s==="room"&&RM)render()})};
+let rvT=0;const rrenderV=()=>{if(document.getElementById("bnArenaSlot")){window.dispatchEvent(new Event("baynna-lb"));if(rvT)return;rvT=setTimeout(()=>{rvT=0;rrender()},2000);return}rrender()};
 function rexit(){const m=RM;if(!m)return;m.left=1;chatUnmount();try{m.u.forEach(f=>f&&f())}catch(e){}try{m.secretUnsub&&m.secretUnsub();m.tbUnsub&&m.tbUnsub();m.tbaUnsub&&m.tbaUnsub();m.drawUnsub&&m.drawUnsub();m.tsUnsub&&m.tsUnsub();m.gpu&&m.gpu();m.gdu&&m.gdu()}catch(e){}
  if(S.u&&m.did){try{const pr=ref(db,`roomPlayers/${m.code}/${S.u.uid}`);onDisconnect(pr).cancel();remove(pr).catch(()=>{})}catch(e){}}
  RM=null;RC=null;try{sessionStorage.removeItem("rc")}catch(e){}
@@ -1466,18 +1467,18 @@ function vunlock(){const V=VC;if(!V)return;Object.values(V.au).forEach(a=>{if(a.
 ["pointerdown","touchend","click"].forEach(t=>document.addEventListener(t,vunlock,{passive:true,capture:true}));
 let CH=null,VC=null;
 function chatMount(m){chatUnmount();const me=S.u.uid,d=document.createElement("div");d.id="chroot";
- d.innerHTML=`<div class="chd"><button id="chb" class="chbtn" aria-label="فتح دردشة الغرفة">💬 <span>الدردشة</span><i id="chu" hidden></i></button><button id="bmb" class="chbtn" aria-label="مكتبة الميمز">😂 <span>ميمز</span></button><button id="vcb" class="chbtn" aria-label="فتح أو إغلاق المايك">🔇 <span>المايك مسكّر</span></button><button id="vcx" class="chbtn" aria-label="فتح أو إغلاق السماعة">🔊 <span>السماعة شغّالة</span></button></div><div id="chp" class="chp" hidden><div class="chh"><b>💬 شات الغرفة</b><button id="chc" class="chbtn sm">✕</button></div><div id="chv" class="chv small"></div><div id="chl" class="chl"></div><div class="chi"><input id="chi" maxlength="300" placeholder="اكتب رسالة..." autocomplete="off"><button id="chs" class="chbtn sm go">➤</button></div></div>`;
+ d.innerHTML=`<div class="chd"><button id="chb" class="chbtn" aria-label="فتح دردشة الغرفة">💬 <span>الدردشة</span><i id="chu" hidden></i></button><button id="vcb" class="chbtn" aria-label="فتح أو إغلاق المايك">🔇 <span>المايك مسكّر</span></button><button id="vcx" class="chbtn" aria-label="فتح أو إغلاق السماعة">🔊 <span>السماعة شغّالة</span></button></div><div id="chp" class="chp" hidden><div class="chh"><b>💬 شات الغرفة</b><button id="chc" class="chbtn sm">✕</button></div><div id="chv" class="chv small"></div><div id="chl" class="chl"></div><div class="chi"><button id="bmb" class="chbtn sm" aria-label="مكتبة الميمز" title="ميمز">😂</button><input id="chi" maxlength="300" placeholder="اكتب رسالة..." autocomplete="off"><button id="chs" class="chbtn sm go">➤</button></div></div>`;
  document.body.appendChild(d);CH={m,el:d,open:0,unread:0,t0:Date.now()+m.off,last:0,vmem:{}};
  const q=i=>d.querySelector("#"+i),line=v=>{const mine=v.uid===me,n=rnm(v.uid);return`<div class="cm ${mine?"mine":""}">${mine?"":av(n.av,28,n.n)}<div><small>${mine?"":esc(n.n)}</small>${(window.BMEME&&BMEME.render(v.t))||`<p>${esc(v.t)}</p>`}</div></div>`};
- const open=o=>{CH.open=o;d.classList.toggle("chat-open",!!o);q("chp").hidden=!o;if(o){CH.unread=0;q("chu").hidden=true;const l=q("chl");l.scrollTop=l.scrollHeight;setTimeout(()=>q("chi").focus(),50)}};
+ const open=o=>{CH.open=o;d.classList.toggle("chat-open",!!o);q("chp").hidden=!o;if(o){try{window.BMEME&&BMEME.preload()}catch(e){}CH.unread=0;q("chu").hidden=true;const l=q("chl");l.scrollTop=l.scrollHeight;setTimeout(()=>q("chi").focus(),50)}};
  const send=()=>{const i=q("chi"),t=i.value.trim();if(!t||Date.now()-CH.last<1200)return;CH.last=Date.now();i.value="";
   push(ref(db,"roomChat/"+m.code),{uid:me,t:t.slice(0,300),ts:Date.now()+m.off}).catch(e=>toast("تعذّر الإرسال ("+ec(e)+")"))};
  q("chb").onclick=()=>open(!CH.open);q("chc").onclick=()=>open(0);q("chs").onclick=send;q("chi").onkeydown=e=>{if(e.key==="Enter")send()};
  q("vcb").onclick=vmute;q("bmb").onclick=()=>window.BMEME&&BMEME.picker();if(window.BMEME)BMEME.setSender(t=>{if(Date.now()-CH.last<1200)return;CH.last=Date.now();push(ref(db,"roomChat/"+m.code),{uid:me,t,ts:Date.now()+m.off}).catch(e=>toast("تعذّر الإرسال ("+ec(e)+")"))});q("vcx").onclick=vdeaf;
  const cbf=sn=>{const v=sn.val();if(!v||typeof v.t!=="string"||!CH)return;const l=q("chl"),near=l.scrollHeight-l.scrollTop-l.clientHeight<90;
-  l.insertAdjacentHTML("beforeend",line(v));if(CH.open){if(near||v.uid===me)l.scrollTop=l.scrollHeight}else if(v.uid!==me&&v.ts>CH.t0){CH.unread++;const u=q("chu");u.textContent=CH.unread;u.hidden=false}};
+  l.insertAdjacentHTML("beforeend",line(v));if(v.ts>CH.t0){try{window.BaynnaLobby&&BaynnaLobby.say(v.uid,v.t)}catch(e){}}if(CH.open){if(near||v.uid===me)l.scrollTop=l.scrollHeight}else if(v.uid!==me&&v.ts>CH.t0){CH.unread++;const u=q("chu");u.textContent=CH.unread;u.hidden=false}};
   const att=n=>{CH.un=onChildAdded(query(ref(db,"roomChat/"+m.code),limitToLast(60)),cbf,()=>{if(n<10)setTimeout(()=>{if(CH&&CH.m===m)att(n+1)},1200)})};att(0);
- const att2=n=>{CH.un2=onValue(ref(db,"roomVoice/"+m.code),sn=>{if(!CH)return;CH.vmem=sn.val()||{};vsync();rrender()},()=>{if(n<10)setTimeout(()=>{if(CH&&CH.m===m)att2(n+1)},1200)})};att2(0);vui();setTimeout(()=>{if(CH&&CH.m===m&&!VC)voiceJoin()},400)}
+ const att2=n=>{CH.un2=onValue(ref(db,"roomVoice/"+m.code),sn=>{if(!CH)return;CH.vmem=sn.val()||{};vsync();rrenderV()},()=>{if(n<10)setTimeout(()=>{if(CH&&CH.m===m)att2(n+1)},1200)})};att2(0);vui();setTimeout(()=>{if(CH&&CH.m===m&&!VC)voiceJoin()},400)}
 function chatUnmount(){voiceLeave();window.BMEME&&BMEME.close();if(!CH)return;const c=CH;CH=null;try{c.un&&c.un();c.un2&&c.un2()}catch(e){}c.el.remove()}
 function vui(){if(!CH)return;const d=CH.el,b=d.querySelector("#vcb"),x=d.querySelector("#vcx"),l=d.querySelector("#chv"),V=VC,mem=Object.keys(CH.vmem||{});
  const mic=!!V&&!V.muted&&V.hasMic,dz=!!CH.deaf;b.innerHTML=mic?"🎙️ <span>المايك مفتوح</span>":"🔇 <span>المايك مسكّر</span>";b.classList.toggle("on",mic);b.setAttribute("aria-pressed",mic);x.innerHTML=dz?"🔈 <span>السماعة مسكّرة</span>":"🔊 <span>السماعة شغّالة</span>";x.classList.toggle("on",!dz);x.setAttribute("aria-pressed",!dz);x.hidden=false;
@@ -1508,7 +1509,7 @@ async function voiceJoin(openMic){const m=CH&&CH.m;if(!m||VC)return;
   try{if(g.type==="offer"){vpClose(u);const pc=vpOpen(u,false);await pc.setRemoteDescription(d);await vflush(u);const a=await pc.createAnswer();await pc.setLocalDescription(a);vsend(u,"answer",JSON.stringify(pc.localDescription))}
    else if(g.type==="answer"){const pc=V.pc[u];if(pc&&pc.signalingState==="have-local-offer"){await pc.setRemoteDescription(d);await vflush(u)}}
    else if(g.type==="ice"){const pc=V.pc[u];if(!pc)return;if(pc.remoteDescription)await pc.addIceCandidate(d).catch(()=>{});else V.q[u].push(d)}}catch(e){}},()=>{}));
- V.ctx=null;V.raf=0;V.speaking=false;try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){V.ctx=new AC();const src=V.ctx.createMediaStreamSource(V.st),an=V.ctx.createAnalyser();an.fftSize=512;src.connect(an);const data=new Uint8Array(an.fftSize);const tick=()=>{if(VC!==V||!V.ctx)return;an.getByteTimeDomainData(data);let sum=0;for(let i=0;i<data.length;i++){const z=(data[i]-128)/128;sum+=z*z}const level=Math.sqrt(sum/data.length),talk=!V.muted&&level>.035;if(talk!==V.speaking){V.speaking=talk;update(ref(db,`roomVoice/${m.code}/${me}`),{speaking:talk}).catch(()=>{});vui();if(CH)rrender()}V.raf=requestAnimationFrame(tick)};tick()}}catch(e){}
+ V.ctx=null;V.raf=0;V.speaking=false;try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){V.ctx=new AC();const src=V.ctx.createMediaStreamSource(V.st),an=V.ctx.createAnalyser();an.fftSize=512;src.connect(an);const data=new Uint8Array(an.fftSize);const tick=()=>{if(VC!==V||!V.ctx)return;an.getByteTimeDomainData(data);let sum=0;for(let i=0;i<data.length;i++){const z=(data[i]-128)/128;sum+=z*z}const level=Math.sqrt(sum/data.length),talk=!V.muted&&level>.035;if(talk!==V.speaking){V.speaking=talk;update(ref(db,`roomVoice/${m.code}/${me}`),{speaking:talk}).catch(()=>{});vui();if(CH)rrenderV()}V.raf=requestAnimationFrame(tick)};tick()}}catch(e){}
  vsync();vunlock();toast(V.hasMic&&!V.muted?"المايك مفتوح 🎙️":"دخلت الدردشة الصوتية 🔊 — اضغط المايك لتحكي") }
 function voiceLeave(){const V=VC;if(!V){if(CH)vui();return}VC=null;if(V.raf)cancelAnimationFrame(V.raf);try{V.ctx&&V.ctx.close()}catch(e){}V.un.forEach(f=>{try{f()}catch(e){}});Object.values(V.pc).forEach(pc=>{try{pc.close()}catch(e){}});Object.values(V.au).forEach(a=>{a.pause?.();a.srcObject=null;a.remove()});V.st.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
  if(S.u){const vr=ref(db,`roomVoice/${V.m.code}/${S.u.uid}`);try{onDisconnect(vr).cancel()}catch(e){}remove(vr).catch(()=>{});remove(ref(db,`roomSig/${V.m.code}/${S.u.uid}`)).catch(()=>{})}vui()}
@@ -2609,8 +2610,21 @@ html:root[data-theme="madrid"] .btn{color:oklch(.2 .02 260)}
 html{background:var(--bg)}body{background:transparent!important}
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:var(--cglow),var(--cbase);transition:background .5s}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 120% 90% at center,transparent 55%,var(--vig) 100%)}
-.card,.tile{background:var(--glass)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line)}
-#thx{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:9999;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:var(--glass);border:1px solid var(--line);box-shadow:var(--sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);cursor:pointer}
+.card,.tile{background:var(--glass)!important;border:1px solid var(--line)}
+#thx{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:9999;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:var(--glass);border:1px solid var(--line);box-shadow:var(--sh);cursor:pointer}
+/* زر «افتحوا غرفة لعب» واضح بالوضعين */
+html:root .group-banner .btn{background:#101E3B;color:#fff;border:1px solid rgba(255,255,255,.18);box-shadow:0 6px 16px -8px rgba(16,30,59,.6)}
+html:root .group-banner .btn:hover{filter:brightness(1.15)}
+/* تحميل الميمز: هيكل لامع بدل الفراغ */
+@keyframes bmsk{from{background-position:120% 0}to{background-position:-120% 0}}
+.bmpk .bmg button,.bmchat{background:linear-gradient(100deg,rgba(128,128,128,.14) 30%,rgba(128,128,128,.3) 50%,rgba(128,128,128,.14) 70%) 120% 0/220% 100%;animation:bmsk 1.2s linear infinite}
+.bmg img{opacity:0;transition:opacity .25s}.bmg img.ld{opacity:1}
+.bmpk .bmg button:has(img.ld){animation:none;background:none}
+.bmpk .bmg button:has(img.er){animation:none;position:relative}.bmpk .bmg button:has(img.er)::after{content:"😶";position:absolute;inset:0;display:grid;place-items:center;font-size:24px}
+.bmchat{width:150px;height:150px}.bmchat.ld,.bmchat.er{animation:none}.bmchat.er{background:rgba(128,128,128,.2)}
+.bmst{font-size:12px;opacity:.75;text-align:center}.bmst[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.bmpk .bmg button,.bmchat{animation:none}}
+body:has(.lb2) .px-bg i{animation:none!important;will-change:auto}
 #thx span{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;font-size:17px;transition:background .35s;opacity:.5}
 :root:not([data-theme="dark"]) #thx .s,:root[data-theme="dark"] #thx .m{background:var(--soft);opacity:1;box-shadow:inset 0 0 0 1px var(--a)}
 </style>

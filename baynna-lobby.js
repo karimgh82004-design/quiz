@@ -15,50 +15,42 @@
       backs: [{ n: 'حديقة الحلوى', sky: ['#ffd6ec', '#e9d8ff'] }, { n: 'غيمة النجوم', sky: ['#d9d4ff', '#ffe3f3'] }],
       uniform: { b: 0 },
       chars: [{ n: 'أرنبة وردية', mv: 'hop', dn: ['hop2', 'twist'] }, { n: 'دبدوب ناعم', mv: 'sway', dn: ['sway', 'twist'] },
-              { n: 'قطة بنفسجية', mv: 'wander', dn: ['slide', 'spin'] }, { n: 'فراولة لطيفة', mv: 'hop', dn: ['hop2', 'flip'] }],
-      says: ['آوووو كيوت جداً 🥺', 'بدي حلوى 🍰', 'بحبكم كلكم 💖'] },
+              { n: 'قطة بنفسجية', mv: 'wander', dn: ['slide', 'spin'] }, { n: 'فراولة لطيفة', mv: 'hop', dn: ['hop2', 'flip'] }] },
     anime: { name: 'عالم الأنمي', icon: '🌀', desc: 'ساكورا ومدينة مضيئة وطاقة', accent: '#ff4f7b',
       backs: [{ n: 'حديقة الساكورا', sky: ['#ffe1ea', '#ffc4d6'] }, { n: 'سطح المدرسة', sky: ['#7cc6ff', '#d6efff'] }],
       uniform: { b: 0 },
       chars: [{ n: 'بطل هادئ', mv: 'chill', dn: ['slide', 'robot'] }, { n: 'تشيبي وردية', mv: 'hop', dn: ['spin', 'twist'] },
-              { n: 'نينجا', mv: 'wander', dn: ['flip', 'slide'] }, { n: 'ساحرة النجوم', mv: 'float', dn: ['twist', 'spin'] }],
-      says: ['نانِي؟! 😱', 'قوة الصداقة! ✨', 'الأوبننغ بدو يبدأ 🎬'] },
+              { n: 'نينجا', mv: 'wander', dn: ['flip', 'slide'] }, { n: 'ساحرة النجوم', mv: 'float', dn: ['twist', 'spin'] }] },
     cyber: { name: 'عالم السايبربانك', icon: '🌃', desc: 'نيون وروبوتات ومدينة المستقبل', accent: '#2ef2ff',
       backs: [{ n: 'شارع النيون', sky: ['#0b0820', '#25124a'] }, { n: 'مختبر الشبكة', sky: ['#001a22', '#003844'] }],
       uniform: { b: 0 },
       chars: [{ n: 'شبح النيون', mv: 'robot', dn: ['robot', 'slide'] }, { n: 'أندرويد', mv: 'robot', dn: ['robot', 'shake'] },
-              { n: 'بانك سايبر', mv: 'sway', dn: ['shake', 'twist'] }, { n: 'ظلّ الشبكة', mv: 'stoic', dn: ['robot', 'flip'] }],
-      says: ['جاري تحميل الحظ... 99%', 'الواي فاي ضعيف 📶', 'أنا مش روبوت 🤖'] },
+              { n: 'بانك سايبر', mv: 'sway', dn: ['shake', 'twist'] }, { n: 'ظلّ الشبكة', mv: 'stoic', dn: ['robot', 'flip'] }] },
     meme: { name: 'عالم الميمز', icon: '😂', desc: 'تعابير مبالغ فيها وفوضى مضحكة', accent: '#f2ee3a',
       backs: [{ n: 'ساحة الضحك', sky: ['#1b1b22', '#2a2a33'] }, { n: 'غرفة القطط', sky: ['#2a1830', '#3b2244'] }],
       uniform: { b: 0 },
       chars: [{ n: 'ضفدع المرح', mv: 'hop', dn: ['hop2', 'spin'] }, { n: 'موزة كول', mv: 'sway', dn: ['twist', 'slide'] },
-              { n: 'قطة مصدومة', mv: 'jitter', dn: ['shake', 'flip'] }, { n: 'موآي الغامض', mv: 'stoic', dn: ['robot', 'twist'] }],
-      says: ['ستونكس 📈', 'بو بو بو 🐸', 'ميم جديد وصل 🔥'] },
+              { n: 'قطة مصدومة', mv: 'jitter', dn: ['shake', 'flip'] }, { n: 'موآي الغامض', mv: 'stoic', dn: ['robot', 'twist'] }] },
     fantasy: { name: 'عالم الفانتازيا', icon: '🏰', desc: 'سحرة وفرسان وغابات مسحورة', accent: '#b38cff',
       backs: [{ n: 'الغابة المسحورة', sky: ['#13233a', '#2c4f4a'] }, { n: 'بوابة القلعة', sky: ['#2b1d4a', '#5a3d7a'] }],
       uniform: { b: 0 },
       chars: [{ n: 'ساحر', mv: 'float', dn: ['spin', 'twist'] }, { n: 'فارس', mv: 'march', dn: ['hop2', 'shake'] },
-              { n: 'قناصة الغابة', mv: 'wander', dn: ['slide', 'twist'] }, { n: 'تنين صغير', mv: 'hop', dn: ['hop2', 'flip'] }],
-      says: ['بالسحر رح أفوز 🔮', 'وين التنين؟ 🐉', 'مهمة جديدة؟ ⚔️'] },
+              { n: 'قناصة الغابة', mv: 'wander', dn: ['slide', 'twist'] }, { n: 'تنين صغير', mv: 'hop', dn: ['hop2', 'flip'] }] },
     street: { name: 'ستريت ستايل', icon: '🛹', desc: 'هوديز وغرافيتي ورقص', accent: '#ff8a3d',
       backs: [{ n: 'ساحة الغرافيتي', sky: ['#2d2d34', '#46464f'] }, { n: 'سطح المدينة', sky: ['#ff9966', '#ff5e62'] }],
       uniform: { b: 0 },
       chars: [{ n: 'سكيتر', mv: 'wander', dn: ['slide', 'flip'] }, { n: 'رابرة', mv: 'sway', dn: ['twist', 'shake'] },
-              { n: 'لاعب سلة', mv: 'hop', dn: ['hop2', 'flip'] }, { n: 'ستايل', mv: 'chill', dn: ['slide', 'robot'] }],
-      says: ['ستايلي مش عادي 🧢', 'الراب جاهز 🎤', 'ولا حركة وحدة 🛹'] },
+              { n: 'لاعب سلة', mv: 'hop', dn: ['hop2', 'flip'] }, { n: 'ستايل', mv: 'chill', dn: ['slide', 'robot'] }] },
     tactical: { name: 'العالم التكتيكي', icon: '🎖️', desc: 'قاعدة عمليات وشارات وتحديات جماعية', accent: '#a3c45a',
       backs: [{ n: 'قاعدة العمليات', sky: ['#2b3125', '#454d38'] }, { n: 'مركز القيادة', sky: ['#1f2226', '#3a3f45'] }],
       uniform: { b: 0 },
       chars: [{ n: 'جندي', mv: 'march', dn: ['robot', 'hop2'] }, { n: 'قنّاص مموّه', mv: 'stoic', dn: ['robot', 'twist'] },
-              { n: 'طبيب ميداني', mv: 'chill', dn: ['sway', 'hop2'] }, { n: 'قائد', mv: 'march', dn: ['robot', 'slide'] }],
-      says: ['العملية جاهزة 🎯', 'استلمت، انتهى 🎖️', 'الهدف أمامنا 🗺️'] },
+              { n: 'طبيب ميداني', mv: 'chill', dn: ['sway', 'hop2'] }, { n: 'قائد', mv: 'march', dn: ['robot', 'slide'] }] },
     cozy: { name: 'العالم الهادئ', icon: '☕', desc: 'أكواخ ومقاهٍ وإضاءة دافئة', accent: '#ffc46b',
       backs: [{ n: 'المقهى الدافئ', sky: ['#3b2a20', '#6b4a33'] }, { n: 'الكوخ الشتوي', sky: ['#a9c6e8', '#e8eef7'] }],
       uniform: { b: 0 },
       chars: [{ n: 'ولد الكاكاو', mv: 'sway', dn: ['sway', 'hop2'] }, { n: 'ثعلب دافئ', mv: 'wander', dn: ['slide', 'twist'] },
-              { n: 'الجدّة', mv: 'chill', dn: ['sway', 'twist'] }, { n: 'دبّ النعسان', mv: 'nod', dn: ['sway', 'shake'] }],
-      says: ['قهوة ودفا ☕', 'بدي أنام 😴', 'الشتي حلو 🧣'] }
+              { n: 'الجدّة', mv: 'chill', dn: ['sway', 'twist'] }, { n: 'دبّ النعسان', mv: 'nod', dn: ['sway', 'shake'] }] }
   };
   var WKEYS = Object.keys(WORLDS);
   var HOW = { hop: 'يتنطّط', sway: 'يتمايل', wander: 'يتمشّى', chill: 'رايق', robot: 'حركات روبوت', jitter: 'متوتر ومضحك',
@@ -81,12 +73,7 @@
   var SLOTS = 12;
   var EMO_MS = 6400;
 
-  /* ---------- ميمز: جمل قصيرة (عامة + خاصة بكل عالم) وستكرز من أصول المشروع ---------- */
-  var PHRASES = ['يا لطيف شو هاد 😂', 'أنا جاهز... مش جاهز', 'وين الأكل يا جماعة؟ 🍕', 'مين فتح المايك؟', 'أنا بريء والله 😇',
-    'يلا شو ناطرين؟', 'حاسس إني رح أخسر 🤡', 'ثواني وبرجع', 'مين الغشاش؟ 🕵️', 'البطل وصل 😎', 'هاي مش لعبة هاي مصيبة',
-    'ولا كلمة... 🗿', 'خلّيها على الله', 'أنا الأسطورة هون 👑', 'نص ساعة وجاي', 'ما تتفلسف يا زلمة', 'جيت متأخر بس جيت',
-    'شو القصة يا جماعة؟', 'بدي أفوز وبس 🏆', 'اللي يخسر يعزم ☕', 'الحمدلله على السلامة 🗿', 'أنا مش نايم، بفكّر 😴',
-    'هو في أمل؟ لا 😭', 'بيننا ولا بيننا؟ 🤔', 'شغّلوا الموسيقى 🎶', 'عيني عليك يا غشاش 👀', 'رقصة النصر جاهزة 💃', 'كل واحد يعترف 👀'];
+  /* ---------- ستكرز ردّات الفعل ---------- */
   var STICKERS = ['art/sticker-0.webp', 'art/sticker-1.webp', 'art/sticker-2.webp', 'art/sticker-3.webp', 'art/sticker-4.webp', 'art/sticker-5.webp'];
 
   var defaults = { b: 0, world: 'meme', back: 0, lite: false };
@@ -116,6 +103,18 @@
   var me = { e: '', et: 0, etw: 0, last: 0 };
   var crowd = {}; /* uid -> {x,y,born,e,et,tw,lastT} */
   var list = [];  /* اللاعبون مرتبون ثابتًا حسب uid */
+  var says = {};  /* uid -> آخر رسالة دردشة تظهر فوق شخصيته: {t, dur, text | src} */
+
+  /* تُستدعى من الدردشة عند وصول رسالة جديدة: النص أو الميم يظهر فوق شخصية صاحبه */
+  var MEMERX = /^\[\[meme:(\d{1,3})\]\]$/;
+  function say(uid, text) {
+    text = String(text == null ? '' : text).trim(); if (!uid || !text) return;
+    var o = { t: performance.now(), dur: 0 }, mm = MEMERX.exec(text);
+    if (mm) { var d = (window.BMEME_DATA || [])[+mm[1]]; if (!d) return; o.src = 'memes/' + d.f; o.dur = 5200; img(o.src); }
+    else { o.text = text.slice(0, 120); o.dur = Math.min(8000, 3200 + o.text.length * 70); }
+    says[uid] = o;
+  }
+  window.BaynnaLobby = { say: say };
 
   function NET() { try { return window.BaynnaNet && window.BaynnaNet.state(); } catch (e) { return null; } }
   function curWorld() {
@@ -322,19 +321,20 @@
   var BEAT = 520;          /* ~115 BPM */
   var DANCE_PERIOD = 12000, DANCE_LEN = 3600;
   var GROUP_PERIOD = 48000, GROUP_LEN = 6000; /* آخر 6 ثواني من كل 48: رقصة جماعية متزامنة */
-  var SAY_SLOT = 5200, SAY_LEN = 3400;
 
   /* ---------- رسم ---------- */
   function ease(x) { x = Math.min(1, Math.max(0, x)); return 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow(x - 1, 2); }
   function rr(ctx, x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
   function wrap(ctx, text, maxW) {
-    var words = text.split(' '), lines = [], cur = '';
+    var words = text.split(/\s+/), lines = [], cur = '';
     words.forEach(function (w) { var t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
-    if (cur) lines.push(cur); return lines.slice(0, 2);
+    if (cur) lines.push(cur);
+    var more = lines.length > 2; lines = lines.slice(0, 2); if (more) lines[1] += '…';
+    return lines.map(function (l) { while (l.length > 1 && ctx.measureText(l).width > maxW) l = l.slice(0, -2) + '…'; return l; });
   }
   function bubble(ctx, text, cx, bottom, W, age, dur) {
     var sc = age < 260 ? ease(age / 260) : age > dur - 220 ? Math.max(0, (dur - age) / 220) : 1; if (sc <= .01) return;
-    ctx.font = BF; var inf = bc[text]; if (!inf) { if (Object.keys(bc).length > 200) bc = {}; var ls = wrap(ctx, text, 150), mw = 0; ls.forEach(function (l) { mw = Math.max(mw, ctx.measureText(l).width); }); inf = bc[text] = { lines: ls, w: mw }; }
+    ctx.font = BF; var inf = bc[text]; if (!inf) { if (Object.keys(bc).length > 200) bc = {}; var ls = wrap(ctx, text, 140), mw = 0; ls.forEach(function (l) { mw = Math.max(mw, ctx.measureText(l).width); }); inf = bc[text] = { lines: ls, w: mw }; }
     var lines = inf.lines, w = inf.w;
     w += 20; var h = lines.length * 18 + 12; bottom = Math.max(bottom, h + 14); var  x = Math.min(W - 6 - w / 2, Math.max(6 + w / 2, cx)), tx = Math.max(-w / 2 + 12, Math.min(w / 2 - 12, cx - x));
     ctx.save(); ctx.translate(x, bottom); ctx.scale(sc, sc);
@@ -343,6 +343,22 @@
     ctx.fillStyle = '#14141c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     lines.forEach(function (l, i) { ctx.fillText(l, 0, -h - 8 + 6 + 9 + i * 18); });
     ctx.restore();
+  }
+  function memeBubble(ctx, src, cx, bottom, W, age, dur) {
+    var im = img(src); if (!im) return;
+    var sc = age < 260 ? ease(age / 260) : age > dur - 220 ? Math.max(0, (dur - age) / 220) : 1; if (sc <= .01) return;
+    var w = 84, h = 84; bottom = Math.max(bottom, h + 14);
+    var x = Math.min(W - 6 - w / 2, Math.max(6 + w / 2, cx)), tx = Math.max(-w / 2 + 12, Math.min(w / 2 - 12, cx - x));
+    ctx.save(); ctx.translate(x, bottom); ctx.scale(sc, sc);
+    ctx.fillStyle = 'rgba(255,255,255,.97)'; rr(ctx, -w / 2, -h - 8, w, h, 12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(tx - 6, -9); ctx.lineTo(tx, 0); ctx.lineTo(tx + 6, -9); ctx.closePath(); ctx.fill();
+    ctx.save(); rr(ctx, -w / 2 + 4, -h - 4, w - 8, h - 8, 9); ctx.clip();
+    var s = Math.max((w - 8) / im.naturalWidth, (h - 8) / im.naturalHeight);
+    ctx.drawImage(im, -im.naturalWidth * s / 2, -h / 2 - 8 - im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s);
+    ctx.restore(); ctx.restore();
+  }
+  function chatBubble(ctx, cs, cx, bottom, W, age) {
+    if (cs.src) memeBubble(ctx, cs.src, cx, bottom, W, age, cs.dur); else bubble(ctx, cs.text, cx, bottom, W, age, cs.dur);
   }
   var wc = {}, bc = {}, PF = '800 12px Cairo,Tahoma,sans-serif', BF = '800 13px Cairo,Tahoma,sans-serif';
   function pill(ctx, text, x, y, fg, bg) {
@@ -396,12 +412,13 @@
         for (var q = 0; q < 2; q++) { var ph = ((now / 900) + q * .5) % 1; ctx.globalAlpha = 1 - ph; ctx.strokeStyle = '#3dff8a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, rx * (1 + ph * .6), ry * (1 + ph * .6), 0, 0, 7); ctx.stroke(); }
         ctx.globalAlpha = 1;
       }
-      if (a && a.me) { ctx.strokeStyle = acc; ctx.lineWidth = 3; ctx.shadowColor = acc; ctx.shadowBlur = 12; ctx.beginPath(); ctx.ellipse(x, y, rx * .85, ry * .8, 0, 0, 7); ctx.stroke(); ctx.shadowBlur = 0; }
+      if (a && a.me) { ctx.globalAlpha = .3; ctx.strokeStyle = acc; ctx.lineWidth = 8; ctx.beginPath(); ctx.ellipse(x, y, rx * .85, ry * .8, 0, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, rx * .85, ry * .8, 0, 0, 7); ctx.stroke(); }
       if (!a) { ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font = '700 ' + Math.round(rx * .55) + 'px Cairo,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', x, y + 1); }
       ctx.restore();
     });
   }
 
+  var chatQ = []; /* فقاعات الدردشة: ترتّب وتتناوب بالارتفاع حتى ما تغطي بعضها */
   var late = []; /* طبقة عليا: الأسماء والستكرز والفقاعات تُرسم بعد كل الشخصيات فلا يغطيها أحد */
   function drawSprite(ctx, a, now, t, W, lite, w, acc) {
     var wd = WORLDS[w.id], bi = skinB(a.b, w), ch = wd.chars[bi], spr = img('art/lobby/' + w.id + '-' + bi + '.webp'), c = mk(a.uid), pn = performance.now();
@@ -434,31 +451,24 @@
     else { ctx.fillStyle = acc; ctx.globalAlpha = .75; ctx.beginPath(); ctx.ellipse(0, -h / 2, h * .26, h / 2, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.font = (h * .3) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(wd.icon, 0, -h / 2); }
     ctx.restore();
 
-    var top = fy - lift - h * P.sy - 6, label = (a.talk ? '🔊 ' : '') + (a.host ? '👑 ' : '') + String(a.name || '').slice(0, 10);
+    var top = fy - lift - h * P.sy - 6, label = (a.talk ? '🔊 ' : '') + (a.host ? '👑 ' : '') + String(a.name || '').slice(0, Math.max(4, Math.min(10, Math.floor(a.sw / 9))));
     late.push(function () { pill(ctx, label, c.x, fy + a.sw * .22 + 12, a.talk ? '#06210f' : a.me ? '#101010' : '#fff', a.talk ? '#3dff8a' : a.me ? acc : 'rgba(10,10,16,.72)'); });
 
     /* ردّة فعل: ستكر (أو إيموجي) فوق الرأس، وفي "ميم!" جملة أيضًا؛ وإلا ميم عشوائي متزامن */
-    var bub = '', bubAge = 0, bubDur = SAY_LEN;
     if (em) {
       var e = EMAP[em], si = e[3], src = si === -1 ? STICKERS[emote % STICKERS.length] : si != null ? STICKERS[si] : null, sI = src && img(src), pop = 1 + S(emAge / 150) * .08;
-      if (em === 'meme') { bub = PHRASES[emote % PHRASES.length]; bubAge = emAge; bubDur = 3200; }
       late.push(function () {
         ctx.save(); ctx.translate(c.x + sw0 * .34, top + 4); ctx.scale(pop, pop);
         if (sI) ctx.drawImage(sI, -24, -24, 48, 48); else { ctx.font = '30px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(e[1], 0, 0); }
         ctx.restore();
       });
-    } else {
-      var slot = Math.floor(now / SAY_SLOT), sl = now % SAY_SLOT, n = list.length, idx = list.indexOf(a);
-      var s1 = hash('s' + slot) % n, s2 = n > 1 && hash('t' + slot) % 2 ? (s1 + 1 + hash('u' + slot) % (n - 1)) % n : -1;
-      if ((idx === s1 || idx === s2) && sl < SAY_LEN && hash('q' + slot) % 10 < 8) {
-        var pool = PHRASES.concat(wd.says, wd.says), pi2 = hash(a.uid + slot) % pool.length; if (idx === s2 && pi2 === hash(list[s1].uid + slot) % pool.length) pi2 = (pi2 + 1) % pool.length; bub = pool[pi2]; bubAge = sl;
-        if (hash(a.uid + 'k' + slot) % 3 === 0) {
-          var sI2 = img(STICKERS[hash(a.uid + 's' + slot) % STICKERS.length]);
-          if (sI2 && sl < SAY_LEN - 300) { var pp = Math.min(1, sl / 300), es = ease(pp); late.push(function () { ctx.save(); ctx.translate(c.x - sw0 * .38, top + 6 - pp * 6); ctx.rotate(-.18 + S(sl / 200) * .06); ctx.scale(es, es); ctx.drawImage(sI2, -20, -20, 40, 40); ctx.restore(); }); }
-        }
-      }
     }
-    if (bub) late.push(function () { bubble(ctx, bub, c.x, top - 26, W, bubAge, bubDur); });
+    var cs = says[a.uid];
+    if (cs) {
+      var cage = pn - cs.t;
+      if (cage > cs.dur) delete says[a.uid];
+      else chatQ.push({ cs: cs, x: c.x, b: top - 26, age: cage });
+    }
   }
 
   /* حارس الأداء: لو الجهاز بطيء ننزّل الجودة تلقائيًا (1: بدون مؤثرات، 2: إطارات أقل ودقة أقل) */
@@ -466,7 +476,7 @@
   function frame(tm) {
     raf = requestAnimationFrame(frame);
     if (dead || !arena || !visible || document.hidden) return;
-    var lite = st.lite || reduce || gov.lv >= 1, cap = gov.lv >= 2 ? 48 : lite || coarse || list.length > 8 ? 33 : 15; if (tm - (frame.last || 0) < cap) return; frame.last = tm;
+    var lite = st.lite || reduce || gov.lv >= 1, cap = gov.lv >= 2 ? 48 : 33; if (tm - (frame.last || 0) < cap) return; frame.last = tm;
     var t0 = performance.now();
     try { draw(tm, lite); } catch (e) {
       if (++errs === 1) try { console.warn('[baynna-lobby] draw error:', e && e.message, e && e.stack); } catch (x) {}
@@ -507,9 +517,11 @@
 
     layout(W, H);
     drawPodiums(ctx, now, wd.accent);
-    late.length = 0;
+    late.length = 0; chatQ.length = 0;
     list.slice(0, SLOTS).sort(function (a, b) { return a.row - b.row || a.tx - b.tx; }).forEach(function (a) { drawSprite(ctx, a, now, t, W, lite, w, wd.accent); });
     late.forEach(function (f) { f(); });
+    chatQ.sort(function (a, b) { return a.x - b.x; }).forEach(function (q, i) { q.b -= (i % 3) * 52; });
+    chatQ.sort(function (a, b) { return a.cs.t - b.cs.t; }).forEach(function (q) { chatBubble(ctx, q.cs, q.x, q.b, W, q.age); });
   }
   function startLoop() {
     var cv = arena.querySelector('canvas'), stage = arena.querySelector('.lb-stage'); frame.ctx = cv.getContext('2d');
